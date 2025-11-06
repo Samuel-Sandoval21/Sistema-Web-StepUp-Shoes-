@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<!--
+Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+Click nbfs://nbhost/SystemFileSystem/Templates/Other/html.html to edit this template
+-->
+<html xmlns:th="http://www.thymeleaf.org">
+<div th:fragment="carrito-popup">
+    <!-- Popup del Carrito -->
+    <div id="popup-carrito" class="popup carrito-popup">
+        <div class="popup-content">
+            <div class="carrito-header">
+                <h2>Tu Carrito de Compras</h2>
+                <button class="carrito-close" onclick="cerrarPopUp('popup-carrito')">&times;</button>
+            </div>
+            
+            <div id="carrito-content">
+                <!-- El contenido del carrito se renderiza dinámicamente aquí -->
+                <div class="carrito-loading">
+                    Cargando carrito...
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

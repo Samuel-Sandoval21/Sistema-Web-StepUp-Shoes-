@@ -25,4 +25,22 @@ public class HomeController {
         model.addAttribute("titulo", "StepUp Shoes - Encuentra tu Estilo Perfecto");
         return "index";
     }
+
+    @GetMapping("/promociones")
+    public String promociones(Model model) {
+        model.addAttribute("titulo", "Promociones - StepUp Shoes");
+        return "promociones";
+    }
+
+    @GetMapping("/contacto")
+    public String contacto(Model model) {
+        model.addAttribute("titulo", "Contacto - StepUp Shoes");
+        return "contacto";
+    }
+
+    @GetMapping("/nosotros")
+    public String nosotros(Model model) {
+        model.addAttribute("titulo", "Nosotros - StepUp Shoes");
+        return "nosotros";
+    }
 }

@@ -46,6 +46,51 @@ public class CatalogoController {
         return "catalogo";
     }
 
+    @GetMapping("/buscar")
+    public String buscarProductos(@RequestParam String q, Model model) {
+        List<Producto> productos = productoService.buscarPorTermino(q);
+        List<Categoria> categorias = categoriaService.findAll();
+        
+        model.addAttribute("productos", productos);
+        model.addAttribute("categorias", categorias);
+        model.addAttribute("terminoBusqueda", q);
+        model.addAttribute("titulo", "Resultados de búsqueda: " + q + " - StepUp Shoes");
+        return "catalogo";
+    }
+
+    @GetMapping("/producto/{id}")
+    public String verProducto(@PathVariable Long id, Model model) {
+        Producto producto = productoService.findById(id);
+        if (producto == null) {
+            return "redirect:/catalogo";
+        }
+        
+        // Obtener productos relacionados (misma categoría)
+        List<Producto> productosRelacionados = productoService.findByCategoriaNombre(
+            producto.getCategoria().getNombre()
+        ).stream()
+         .filter(p -> !p.getId().equals(id))
+         .limit(4)
+         .collect(Collectors.toList());
+        
+        model.addAttribute("producto", producto);
+        model.addAttribute("productosRelacionados", productosRelacionados);
+        model.addAttribute("titulo", producto.getNombre() + " - StepUp Shoes");
+        return "producto-detalle";
+    }
+
+    @GetMapping("/categoria/{categoriaNombre}")
+    public String productosPorCategoria(@PathVariable String categoriaNombre, Model model) {
+        List<Producto> productos = productoService.findByCategoriaNombre(categoriaNombre);
+        List<Categoria> categorias = categoriaService.findAll();
+        
+        model.addAttribute("productos", productos);
+        model.addAttribute("categorias", categorias);
+        model.addAttribute("categoriaSeleccionada", categoriaNombre);
+        model.addAttribute("titulo", categoriaNombre + " - StepUp Shoes");
+        return "catalogo";
+    }
+
     private List<Producto> aplicarFiltrosYOrdenamiento(String categoria, String rangoPrecio, String orden) {
         List<Producto> productos;
         
@@ -95,14 +140,5 @@ public class CatalogoController {
                     .collect(Collectors.toList());
             default -> productos;
         };
-    }
-
-    @GetMapping("/buscar")
-    public String buscarProductos(@RequestParam String q, Model model) {
-        List<Producto> productos = productoService.buscarPorTermino(q);
-        model.addAttribute("productos", productos);
-        model.addAttribute("terminoBusqueda", q);
-        model.addAttribute("titulo", "Resultados de búsqueda: " + q);
-        return "catalogo";
     }
 }
