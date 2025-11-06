@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<!--
+Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+Click nbfs://nbhost/SystemFileSystem/Templates/Other/html.html to edit this template
+-->
+<html xmlns:th="http://www.thymeleaf.org">
+<div th:fragment="nav">
+    <!-- Navegación móvil (hamburger menu) -->
+    <div class="nav-mobile">
+        <button class="nav-toggle" id="navToggle">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        
+        <a th:href="@{/}" class="logo-mobile">StepUp Shoes</a>
+        
+        <div class="nav-mobile-actions">
+            <a href="#" onclick="mostrarCarrito()" class="cart-mobile">
+                🛒 <span id="carrito-count-mobile">0</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Menú móvil desplegable -->
+    <div class="mobile-menu" id="mobileMenu">
+        <div class="mobile-menu-content">
+            <div class="mobile-menu-header">
+                <span>Menú</span>
+                <button class="mobile-menu-close" id="mobileMenuClose">&times;</button>
+            </div>
+            
+            <div class="mobile-menu-links">
+                <a th:href="@{/}">Inicio</a>
+                <a th:href="@{/catalogo}">Catálogo</a>
+                <a th:href="@{/promociones}">Promociones</a>
+                <a th:href="@{/contacto}">Contacto</a>
+                
+                <div class="mobile-menu-divider"></div>
+                
+                <div class="mobile-auth-links">
+                    <a href="#" onclick="mostrarLogin(); cerrarMenuMobile()">Iniciar Sesión</a>
+                    <a href="#" onclick="mostrarRegistro(); cerrarMenuMobile()">Crear Cuenta</a>
+                </div>
+                
+                <div class="mobile-user-menu" style="display: none;">
+                    <a href="/cuenta">Mi Cuenta</a>
+                    <a href="/pedidos">Mis Pedidos</a>
+                    <a href="#" onclick="logout(); cerrarMenuMobile()">Cerrar Sesión</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Buscador expandible -->
+    <div class="search-expanded" id="searchExpanded">
+        <div class="search-expanded-content">
+            <form th:action="@{/catalogo/buscar}" method="get" class="search-form-expanded">
+                <input type="text" name="q" placeholder="¿Qué estás buscando?" autocomplete="off">
+                <button type="submit">🔍</button>
+                <button type="button" class="search-close" id="searchClose">&times;</button>
+            </form>
+            
+            <div class="search-suggestions">
+                <div class="suggestion-category">
+                    <h4>Sugerencias populares</h4>
+                    <div class="suggestion-tags">
+                        <a th:href="@{/catalogo/buscar?q=Nike}">Nike</a>
+                        <a th:href="@{/catalogo/buscar?q=Adidas}">Adidas</a>
+                        <a th:href="@{/catalogo/buscar?q=Running}">Running</a>
+                        <a th:href="@{/catalogo/buscar?q=Zapatillas}">Zapatillas</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Funcionalidad del menú móvil
+function toggleMobileMenu() {
+    const menu = document.getElementById('mobileMenu');
+    menu.classList.toggle('active');
+}
+
+function cerrarMenuMobile() {
+    const menu = document.getElementById('mobileMenu');
+    menu.classList.remove('active');
+}
+
+function toggleSearch() {
+    const search = document.getElementById('searchExpanded');
+    search.classList.toggle('active');
+}
+
+// Inicializar menú móvil
+document.addEventListener('DOMContentLoaded', function() {
+    const navToggle = document.getElementById('navToggle');
+    const menuClose = document.getElementById('mobileMenuClose');
+    const searchClose = document.getElementById('searchClose');
+    
+    if (navToggle) {
+        navToggle.addEventListener('click', toggleMobileMenu);
+    }
+    
+    if (menuClose) {
+        menuClose.addEventListener('click', cerrarMenuMobile);
+    }
+    
+    if (searchClose) {
+        searchClose.addEventListener('click', toggleSearch);
+    }
+});
+</script>
+
+<style>
+/* Estilos para navegación móvil */
+.nav-mobile {
+    display: none;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: var(--white);
+    border-bottom: 1px solid var(--light-gray);
+}
+
+.nav-toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem;
+}
+
+.nav-toggle span {
+    display: block;
+    width: 25px;
+    height: 3px;
+    background: var(--dark-gray);
+    margin: 4px 0;
+    transition: 0.3s;
+}
+
+.logo-mobile {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+.cart-mobile {
+    position: relative;
+    text-decoration: none;
+    color: var(--dark-gray);
+    font-size: 1.2rem;
+}
+
+.cart-mobile span {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    font-size: 0.7rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mobile-menu {
+    position: fixed;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 2000;
+    transition: left 0.3s ease;
+}
+
+.mobile-menu.active {
+    left: 0;
+}
+
+.mobile-menu-content {
+    width: 80%;
+    max-width: 300px;
+    height: 100%;
+    background: var(--white);
+    padding: 1rem;
+    overflow-y: auto;
+}
+
+.mobile-menu-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--light-gray);
+    margin-bottom: 1rem;
+}
+
+.mobile-menu-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+.mobile-menu-links {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.mobile-menu-links a {
+    padding: 1rem;
+    text-decoration: none;
+    color: var(--dark-gray);
+    border-radius: var(--border-radius);
+    transition: background-color 0.3s ease;
+}
+
+.mobile-menu-links a:hover {
+    background: var(--light-gray);
+}
+
+.mobile-menu-divider {
+    height: 1px;
+    background: var(--light-gray);
+    margin: 1rem 0;
+}
+
+/* Buscador expandible */
+.search-expanded {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.8);
+    z-index: 2001;
+}
+
+.search-expanded.active {
+    display: block;
+}
+
+.search-expanded-content {
+    background: var(--white);
+    padding: 2rem;
+}
+
+.search-form-expanded {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.search-form-expanded input {
+    flex: 1;
+    padding: 1rem;
+    border: 2px solid var(--primary-color);
+    border-radius: var(--border-radius);
+    font-size: 1.1rem;
+}
+
+.search-form-expanded button {
+    padding: 1rem;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+}
+
+.search-close {
+    background: var(--light-gray) !important;
+    color: var(--dark-gray) !important;
+}
+
+.suggestion-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.suggestion-tags a {
+    background: var(--light-gray);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    text-decoration: none;
+    color: var(--dark-gray);
+    font-size: 0.9rem;
+}
+
+.suggestion-tags a:hover {
+    background: var(--primary-color);
+    color: white;
+}
+
+@media (max-width: 768px) {
+    .nav-mobile {
+        display: flex;
+    }
+    
+    .nav-links {
+        display: none;
+    }
+}
+</style>
+</div>
