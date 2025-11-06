@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<!--
+Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+Click nbfs://nbhost/SystemFileSystem/Templates/Other/html.html to edit this template
+-->
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/header :: head">
+    <title>Checkout - StepUp Shoes</title>
+    <link rel="stylesheet" th:href="@{/css/checkout.css}">
+</head>
+<body>
+    <div th:replace="fragments/header :: header"></div>
+
+    <div class="checkout-container" id="checkout-container">
+        <!-- Header del Checkout -->
+        <div class="checkout-header">
+            <h1>Finalizar Compra</h1>
+            <p>Completa tu información para procesar el pedido</p>
+        </div>
+
+        <!-- Barra de Progreso -->
+        <div class="checkout-progress">
+            <div class="progress-steps">
+                <div class="progress-step active" data-step="1">
+                    <div class="step-number">1</div>
+                    <div class="step-label">Envío</div>
+                </div>
+                <div class="step-connector"></div>
+                <div class="progress-step" data-step="2">
+                    <div class="step-number">2</div>
+                    <div class="step-label">Pago</div>
+                </div>
+                <div class="step-connector"></div>
+                <div class="progress-step" data-step="3">
+                    <div class="step-number">3</div>
+                    <div class="step-label">Confirmación</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="checkout-layout">
+            <!-- Columna Izquierda - Formularios -->
+            <div class="checkout-forms">
+                <!-- Paso 1: Información de Envío -->
+                <div id="paso-1" class="checkout-paso" style="display: block;">
+                    <div class="checkout-form-section">
+                        <div class="section-header">
+                            <div class="section-icon">🚚</div>
+                            <h3 class="section-title">Información de Envío</h3>
+                        </div>
+
+                        <form id="formulario-envio">
+                            <div class="form-grid">
+                                <div class="form-group-full">
+                                    <div class="checkout-form-group">
+                                        <label for="nombreCompleto">Nombre Completo *</label>
+                                        <input type="text" id="nombreCompleto" name="nombreCompleto" 
+                                               th:value="${usuario?.nombre}" placeholder="Tu nombre completo" required>
+                                        <div class="form-error" id="error-nombreCompleto"></div>
+                                    </div>
+                                </div>
+
+                                <div class="checkout-form-group">
+                                    <label for="email">Email *</label>
+                                    <input type="email" id="email" name="email" 
+                                           th:value="${usuario?.email}" placeholder="tu@email.com" required>
+                                    <div class="form-error" id="error-email"></div>
+                                </div>
+
+                                <div class="checkout-form-group">
+                                    <label for="telefono">Teléfono *</label>
+                                    <input type="tel" id="telefono" name="telefono" placeholder="+506 1234 5678" required>
+                                    <div class="form-error" id="error-telefono"></div>
+                                </div>
+
+                                <div class="form-group-full">
+                                    <div class="checkout-form-group">
+                                        <label for="direccion">Dirección Completa *</label>
+                                        <input type="text" id="direccion" name="direccion" 
+                                               placeholder="Calle, número, colonia..." required>
+                                        <div class="form-error" id="error-direccion"></div>
+                                    </div>
+                                </div>
+
+                                <div class="checkout-form-group">
+                                    <label for="ciudad">Ciudad *</label>
+                                    <input type="text" id="ciudad" name="ciudad" placeholder="Tu ciudad" required>
+                                    <div class="form-error" id="error-ciudad"></div>
+                                </div>
+
+                                <div class="checkout-form-group">
+                                    <label for="estado">Estado/Provincia *</label>
+                                    <select id="estado" name="estado" required>
+                                        <option value="">Selecciona un estado</option>
+                                        <option value="San José">San José</option>
+                                        <option value="Alajuela">Alajuela</option>
+                                        <option value="Cartago">Cartago</option>
+                                        <option value="Heredia">Heredia</option>
+                                        <option value="Guanacaste">Guanacaste</option>
+                                        <option value="Puntarenas">Puntarenas</option>
+                                        <option value="Limón">Limón</option>
+                                    </select>
+                                    <div class="form-error" id="error-estado"></div>
+                                </div>
+
+                                <div class="checkout-form-group">
+                                    <label for="codigoPostal">Código Postal *</label>
+                                    <input type="text" id="codigoPostal" name="codigoPostal" placeholder="12345" required>
+                                    <div class="form-error" id="error-codigoPostal"></div>
+                                </div>
+
+                                <div class="checkout-form-group">
+                                    <label for="pais">País</label>
+                                    <input type="text" id="pais" name="pais" value="Costa Rica" readonly>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="checkout-form-section">
+                        <div class="section-header">
+                            <div class="section-icon">📦</div>
+                            <h3 class="section-title">Método de Envío</h3>
+                        </div>
+
+                        <div class="shipping-methods">
+                            <div class="shipping-method selected" data-method-id="estandar">
+                                <input type="radio" name="shippingMethod" checked>
+                                <div class="shipping-info">
+                                    <div class="shipping-name">Envío Estándar</div>
+                                    <div class="shipping-description">Entrega a domicilio estándar</div>
+                                    <div class="shipping-price">$10.00</div>
+                                </div>
+                            </div>
+
+                            <div class="shipping-method" data-method-id="express">
+                                <input type="radio" name="shippingMethod">
+                                <div class="shipping-info">
+                                    <div class="shipping-name">Envío Express</div>
+                                    <div class="shipping-description">Entrega prioritaria</div>
+                                    <div class="shipping-price">$20.00</div>
+                                </div>
+                            </div>
+
+                            <div class="shipping-method" data-method-id="gratis">
+                                <input type="radio" name="shippingMethod">
+                                <div class="shipping-info">
+                                    <div class="shipping-name">Envío Gratis</div>
+                                    <div class="shipping-description">Envío gratis en compras mayores a $100</div>
+                                    <div class="shipping-price shipping-free">GRATIS</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="checkout-actions">
+                        <a th:href="@{/catalogo}" class="btn-checkout btn-checkout-back">
+                            ← Volver al Catálogo
+                        </a>
+                        <button id="btn-continuar-paso-1" class="btn-checkout btn-checkout-continue">
+                            Continuar a Pago →
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Paso 2: Método de Pago -->
+                <div id="paso-2" class="checkout-paso" style="display: none;">
+                    <div class="checkout-form-section">
+                        <div class="section-header">
+                            <div class="section-icon">💳</div>
+                            <h3 class="section-title">Método de Pago</h3>
+                        </div>
+
+                        <div class="payment-methods">
+                            <div class="payment-method" data-method-id="tarjeta">
+                                <div class="payment-icon">💳</div>
+                                <div class="payment-info">
+                                    <div class="payment-name">Tarjeta de Crédito/Débito</div>
+                                    <div class="payment-description">Pago seguro con tarjeta</div>
+                                </div>
+                                <input type="radio" name="paymentMethod">
+                            </div>
+
+                            <div class="payment-method" data-method-id="paypal">
+                                <div class="payment-icon">🔵</div>
+                                <div class="payment-info">
+                                    <div class="payment-name">PayPal</div>
+                                    <div class="payment-description">Pago rápido y seguro con PayPal</div>
+                                </div>
+                                <input type="radio" name="paymentMethod">
+                            </div>
+
+                            <div class="payment-method" data-method-id="transferencia">
+                                <div class="payment-icon">🏦</div>
+                                <div class="payment-info">
+                                    <div class="payment-name">Transferencia Bancaria</div>
+                                    <div class="payment-description">Transferencia bancaria directa</div>
+                                </div>
+                                <input type="radio" name="paymentMethod">
+                            </div>
+                        </div>
+
+                        <!-- Formulario de Tarjeta de Crédito -->
+                        <div id="credit-card-form" class="credit-card-form">
+                            <div class="card-preview">
+                                <div class="card-chip"></div>
+                                <div class="card-number">•••• •••• •••• ••••</div>
+                                <div class="card-details">
+                                    <div class="card-holder">
+                                        <div class="card-label">TITULAR</div>
+                                        <div class="card-value">NOMBRE APELLIDO</div>
+                                    </div>
+                                    <div class="card-expiry">
+                                        <div class="card-label">EXPIRA</div>
+                                        <div class="card-value">MM/AA</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-grid">
+                                <div class="form-group-full">
+                                    <div class="checkout-form-group">
+                                        <label for="numeroTarjeta">Número de Tarjeta</label>
+                                        <input type="text" id="numeroTarjeta" name="numeroTarjeta" 
+                                               placeholder="1234 5678 9012 3456" maxlength="19">
+                                    </div>
+                                </div>
+
+                                <div class="form-group-full">
+                                    <div class="checkout-form-group">
+                                        <label for="nombreTitular">Nombre del Titular</label>
+                                        <input type="text" id="nombreTitular" name="nombreTitular" 
+                                               placeholder="Como aparece en la tarjeta">
+                                    </div>
+                                </div>
+
+                                <div class="checkout-form-group">
+                                    <label for="fechaExpiracion">Fecha de Expiración</label>
+                                    <input type="text" id="fechaExpiracion" name="fechaExpiracion" 
+                                           placeholder="MM/AA" maxlength="5">
+                                </div>
+
+                                <div class="checkout-form-group">
+                                    <label for="cvv">CVV</label>
+                                    <input type="text" id="cvv" name="cvv" placeholder="123" maxlength="3">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="checkout-security">
+                        <div class="security-features">
+                            <div class="security-feature">
+                                <div class="security-icon">🔒</div>
+                                <span>Pago 100% seguro con encriptación SSL</span>
+                            </div>
+                            <div class="security-feature">
+                                <div class="security-icon">📧</div>
+                                <span>Recibirás email de confirmación con número de seguimiento</span>
+                            </div>
+                            <div class="security-feature">
+                                <div class="security-icon">🚚</div>
+                                <span>Tiempo de entrega estimado: 3-5 días hábiles</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="checkout-actions">
+                        <button id="btn-volver-paso-2" class="btn-checkout btn-checkout-back">
+                            ← Volver a Envío
+                        </button>
+                        <button id="btn-continuar-paso-2" class="btn-checkout btn-checkout-continue">
+                            Continuar a Confirmación →
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Paso 3: Confirmación -->
+                <div id="paso-3" class="checkout-paso" style="display: none;">
+                    <div class="checkout-form-section">
+                        <div class="section-header">
+                            <div class="section-icon">✅</div>
+                            <h3 class="section-title">Revisar y Confirmar Pedido</h3>
+                        </div>
+
+                        <div style="text-align: center; margin-bottom: 2rem;">
+                            <div style="font-size: 4rem; margin-bottom: 1rem;">📦</div>
+                            <h3 style="color: var(--secondary-color); margin-bottom: 1rem;">¡Estás a un paso de completar tu pedido!</h3>
+                            <p style="color: #666; margin-bottom: 2rem;">
+                                Revisa que toda la información sea correcta antes de confirmar tu pedido.
+                            </p>
+                        </div>
+
+                        <div style="background: var(--light-gray); padding: 1.5rem; border-radius: var(--border-radius); margin-bottom: 2rem;">
+                            <h4 style="margin-bottom: 1rem; color: var(--secondary-color);">Resumen del Pedido</h4>
+                            <p><strong>Envío a:</strong> <span id="confirmacion-direccion"></span></p>
+                            <p><strong>Método de envío:</strong> <span id="confirmacion-envio"></span></p>
+                            <p><strong>Método de pago:</strong> <span id="confirmacion-pago"></span></p>
+                        </div>
+
+                        <div class="checkout-security">
+                            <div class="security-features">
+                                <div class="security-feature">
+                                    <div class="security-icon">🛡️</div>
+                                    <span>Tu información está protegida con encriptación SSL</span>
+                                </div>
+                                <div class="security-feature">
+                                    <div class="security-icon">↩️</div>
+                                    <span>Política de devoluciones de 30 días</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="checkout-actions">
+                        <button id="btn-volver-paso-3" class="btn-checkout btn-checkout-back">
+                            ← Volver a Pago
+                        </button>
+                        <button id="btn-finalizar-pedido" class="btn-checkout btn-checkout-continue">
+                            ✅ Confirmar y Pagar
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Columna Derecha - Resumen del Pedido -->
+            <div class="order-summary">
+                <div class="summary-header">
+                    <h3>Resumen del Pedido</h3>
+                </div>
+                <div id="order-summary-content">
+                    <!-- El resumen se actualiza dinámicamente con JavaScript -->
+                    <div class="carrito-loading">Cargando resumen...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div th:replace="fragments/footer :: footer"></div>
+
+    <!-- Scripts específicos del checkout -->
+    <script th:src="@{/js/checkout.js}"></script>
+</body>
+</html>

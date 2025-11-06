@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<!--
+Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+Click nbfs://nbhost/SystemFileSystem/Templates/Other/html.html to edit this template
+-->
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/header :: head">
+    <title>Registro - StepUp Shoes</title>
+</head>
+<body>
+    <div th:replace="fragments/header :: header"></div>
+    <div th:replace="fragments/nav :: nav"></div>
+
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h1>Crear Cuenta</h1>
+                <p>Regístrate para empezar a comprar</p>
+            </div>
+
+            <form id="registerForm" class="auth-form" th:action="@{/registro}" method="post">
+                <div class="form-group">
+                    <label for="nombre">Nombre Completo</label>
+                    <input type="text" id="nombre" name="nombre" placeholder="Tu nombre completo" required>
+                    <div class="error-message" id="error-nombre"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" placeholder="tu@email.com" required>
+                    <div class="error-message" id="error-email"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Contraseña</label>
+                    <input type="password" id="password" name="password" placeholder="Mínimo 6 caracteres" required>
+                    <div class="error-message" id="error-password"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirmPassword">Confirmar Contraseña</label>
+                    <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Repite tu contraseña" required>
+                    <div class="error-message" id="error-confirmPassword"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="terms-agreement">
+                        <input type="checkbox" name="terms" required>
+                        Acepto los <a href="#">términos y condiciones</a> y la <a href="#">política de privacidad</a>
+                    </label>
+                    <div class="error-message" id="error-terms"></div>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-auth">
+                    Crear Cuenta
+                </button>
+
+                <div class="auth-divider">
+                    <span>o registrarse con</span>
+                </div>
+
+                <div class="social-auth">
+                    <button type="button" class="btn btn-social btn-google">
+                        <img src="/images/google-icon.svg" alt="Google">
+                        Google
+                    </button>
+                    <button type="button" class="btn btn-social btn-facebook">
+                        <img src="/images/facebook-icon.svg" alt="Facebook">
+                        Facebook
+                    </button>
+                </div>
+
+                <div class="auth-switch">
+                    ¿Ya tienes cuenta? <a th:href="@{/login}">Inicia sesión aquí</a>
+                </div>
+            </form>
+        </div>
+
+        <div class="auth-benefits">
+            <h3>Únete a nuestra comunidad</h3>
+            <div class="benefits-list">
+                <div class="benefit-item">
+                    <span class="benefit-icon">🎁</span>
+                    <div class="benefit-text">
+                        <strong>10% de descuento</strong>
+                        <p>En tu primera compra al registrarte</p>
+                    </div>
+                </div>
+                <div class="benefit-item">
+                    <span class="benefit-icon">⭐</span>
+                    <div class="benefit-text">
+                        <strong>Programa de puntos</strong>
+                        <p>Gana puntos en cada compra</p>
+                    </div>
+                </div>
+                <div class="benefit-item">
+                    <span class="benefit-icon">📧</span>
+                    <div class="benefit-text">
+                        <strong>Ofertas exclusivas</strong>
+                        <p>Recibe promociones antes que nadie</p>
+                    </div>
+                </div>
+                <div class="benefit-item">
+                    <span class="benefit-icon">🚀</span>
+                    <div class="benefit-text">
+                        <strong>Checkout rápido</strong>
+                        <p>Guarda tu información para compras futuras</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div th:replace="fragments/footer :: footer"></div>
+
+    <style>
+    .terms-agreement {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+        cursor: pointer;
+        line-height: 1.4;
+    }
+
+    .terms-agreement a {
+        color: var(--accent-color);
+        text-decoration: none;
+    }
+
+    .terms-agreement a:hover {
+        text-decoration: underline;
+    }
+
+    /* Reutilizamos los estilos del login con algunas modificaciones */
+    </style>
+
+    <script>
+    // Validación del formulario de registro
+    document.getElementById('registerForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const nombre = document.getElementById('nombre').value;
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+        const terms = document.querySelector('input[name="terms"]').checked;
+        
+        let isValid = true;
+        
+        // Validar nombre
+        if (nombre.trim().length < 2) {
+            mostrarError('nombre', 'El nombre debe tener al menos 2 caracteres');
+            isValid = false;
+        } else {
+            ocultarError('nombre');
+        }
+        
+        // Validar email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            mostrarError('email', 'Por favor ingresa un email válido');
+            isValid = false;
+        } else {
+            ocultarError('email');
+        }
+        
+        // Validar contraseña
+        if (password.length < 6) {
+            mostrarError('password', 'La contraseña debe tener al menos 6 caracteres');
+            isValid = false;
+        } else {
+            ocultarError('password');
+        }
+        
+        // Validar confirmación de contraseña
+        if (password !== confirmPassword) {
+            mostrarError('confirmPassword', 'Las contraseñas no coinciden');
+            isValid = false;
+        } else {
+            ocultarError('confirmPassword');
+        }
+        
+        // Validar términos
+        if (!terms) {
+            mostrarError('terms', 'Debes aceptar los términos y condiciones');
+            isValid = false;
+        } else {
+            ocultarError('terms');
+        }
+        
+        if (isValid) {
+            // Enviar formulario
+            this.submit();
+        }
+    });
+    
+    function mostrarError(campo, mensaje) {
+        const errorElement = document.getElementById(`error-${campo}`);
+        if (errorElement) {
+            errorElement.textContent = mensaje;
+            errorElement.classList.add('show');
+        }
+    }
+    
+    function ocultarError(campo) {
+        const errorElement = document.getElementById(`error-${campo}`);
+        if (errorElement) {
+            errorElement.classList.remove('show');
+        }
+    }
+    </script>
+</body>
+</html>
