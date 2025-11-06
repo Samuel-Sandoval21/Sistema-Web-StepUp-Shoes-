@@ -6,6 +6,7 @@ package com.stepup.shoes.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import java.time.LocalDateTime;
 
 @Data
 @Entity
@@ -20,6 +21,14 @@ public class Categoria {
     
     private String descripcion;
     
-    @Column(name = "imagen_url")
     private String imagenUrl;
+    
+    // ✅ AGREGAR ESTE CAMPO
+    private Boolean activo = true;
+    
+    @Column(name = "fecha_creacion")
+    private LocalDateTime fechaCreacion = LocalDateTime.now();
+    
+    @Column(name = "fecha_actualizacion")
+    private LocalDateTime fechaActualizacion = LocalDateTime.now();
 }
