@@ -266,3 +266,52 @@ body {
         font-size: 1rem;
     }
 }
+
+/* Mensajes del carrito */
+.carrito-mensaje {
+    position: fixed;
+    top: 100px;
+    right: 20px;
+    padding: 1rem 1.5rem;
+    border-radius: var(--border-radius);
+    z-index: 10000;
+    max-width: 300px;
+    box-shadow: var(--shadow);
+    animation: slideInRight 0.3s ease;
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Botones de talla */
+.btn-talla {
+    padding: 1rem;
+    border: 2px solid #ddd;
+    background: var(--white);
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-talla:hover {
+    border-color: var(--primary-color);
+    background: var(--primary-color);
+    color: var(--white);
+}
+
+/* Contenedor de tallas */
+.tallas-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+    margin: 2rem 0;
+}

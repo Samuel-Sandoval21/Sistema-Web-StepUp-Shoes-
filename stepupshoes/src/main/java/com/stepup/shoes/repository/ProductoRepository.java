@@ -22,12 +22,12 @@ public interface ProductoRepository extends JpaRepository<Producto, Long> {
     
     List<Producto> findByDestacadoTrue();
     
-    List<Producto> findAllByOrderByPrecioAsc();
-    
-    List<Producto> findAllByOrderByPrecioDesc();
-    
-    List<Producto> findAllByOrderByNombreAsc();
+    // ✅ CORREGIDO: Ahora existe la propiedad 'activo'
+    List<Producto> findByActivoTrue();
     
     @Query("SELECT p FROM Producto p WHERE p.nombre LIKE %:termino% OR p.descripcion LIKE %:termino%")
     List<Producto> buscarPorTermino(@Param("termino") String termino);
+    
+    // Método adicional útil
+    List<Producto> findByCategoriaNombreAndActivoTrue(String categoria);
 }

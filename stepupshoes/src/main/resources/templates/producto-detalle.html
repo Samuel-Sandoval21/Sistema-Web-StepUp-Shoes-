@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<!--
+Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+Click nbfs://nbhost/SystemFileSystem/Templates/Other/html.html to edit this template
+-->
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/header :: head">
+    <title th:text="${producto.nombre} + ' - StepUp Shoes'">Detalle Producto - StepUp Shoes</title>
+</head>
+<body>
+    <div th:replace="fragments/header :: header"></div>
+    <div th:replace="fragments/nav :: nav"></div>
+
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+        <div class="container">
+            <ul class="breadcrumb-links">
+                <li><a th:href="@{/}">Inicio</a></li>
+                <li class="separator">/</li>
+                <li><a th:href="@{/catalogo}">Catálogo</a></li>
+                <li class="separator">/</li>
+                <li><a th:href="@{/catalogo?categoria={categoria}(categoria=${producto.categoria.nombre})}" th:text="${producto.categoria.nombre}"></a></li>
+                <li class="separator">/</li>
+                <li th:text="${producto.nombre}"></li>
+            </ul>
+        </div>
+    </div>
+
+    <main class="container">
+        <div class="producto-detalle-container">
+            <!-- Galería de imágenes -->
+            <div class="producto-galeria">
+                <div class="galeria-principal">
+                    <img th:src="${producto.imagenUrl}" th:alt="${producto.nombre}" id="imagenPrincipal">
+                </div>
+                <div class="galeria-miniaturas">
+                    <div class="miniatura active" onclick="cambiarImagen(this)">
+                        <img th:src="${producto.imagenUrl}" th:alt="${producto.nombre}">
+                    </div>
+                    <!-- Más miniaturas pueden agregarse dinámicamente -->
+                </div>
+            </div>
+
+            <!-- Información del producto -->
+            <div class="producto-info-detalle">
+                <div th:if="${producto.destacado}" class="producto-badge">⭐ Destacado</div>
+                <h1 th:text="${producto.nombre}"></h1>
+                <div class="producto-precio-detalle">
+                    <span class="precio-actual" th:text="'$' + ${#numbers.formatDecimal(producto.precio, 1, 2)}"></span>
+                    <span th:if="${producto.precioOriginal}" class="precio-original" th:text="'$' + ${#numbers.formatDecimal(producto.precioOriginal, 1, 2)}"></span>
+                    <span th:if="${producto.descuento}" class="descuento-badge" th:text="'-' + ${producto.descuento} + '%'"></span>
+                </div>
+
+                <div class="producto-rating">
+                    <div class="estrellas">
+                        <span>⭐</span><span>⭐</span><span>⭐</span><span>⭐</span><span>⭐</span>
+                        <span class="rating-text">(4.5/5)</span>
+                    </div>
+                    <a href="#reseñas" class="ver-resenas">Ver 128 reseñas</a>
+                </div>
+
+                <p class="producto-descripcion-detalle" th:text="${producto.descripcion}"></p>
+
+                <!-- Selección de talla -->
+                <div class="talla-selector">
+                    <label>Talla:</label>
+                    <div class="tallas-disponibles">
+                        <div th:each="talla : ${producto.tallasDisponibles}" 
+                             class="talla-option" 
+                             th:classappend="${talla.stock > 0} ? 'disponible' : 'agotado'"
+                             onclick="seleccionarTalla(this, [[${talla}]])">
+                            <span th:text="${talla}"></span>
+                        </div>
+                    </div>
+                    <a href="#" class="guia-tallas">Guía de tallas</a>
+                </div>
+
+                <!-- Selector de cantidad -->
+                <div class="cantidad-selector">
+                    <label>Cantidad:</label>
+                    <div class="cantidad-controls">
+                        <button class="cantidad-btn" onclick="modificarCantidad(-1)">-</button>
+                        <span class="cantidad-value" id="cantidadValue">1</span>
+                        <button class="cantidad-btn" onclick="modificarCantidad(1)">+</button>
+                    </div>
+                    <span class="stock-info" th:text="'Stock disponible: ' + ${producto.stock} + ' unidades'"></span>
+                    <span class="max-unidades" th:if="${producto.maxPorPedido}" th:text="'(Máximo ' + ${producto.maxPorPedido} + ' por pedido)'"></span>
+                </div>
+
+                <!-- Acciones -->
+                <div class="producto-acciones-detalle">
+                    <button class="btn btn-primary btn-agregar-carrito" onclick="agregarAlCarritoDesdeDetalle()">
+                        🛒 Añadir al Carrito
+                    </button>
+                    <button class="btn btn-outline btn-comprar-ahora" onclick="comprarAhora()">
+                        ⚡ Comprar Ahora
+                    </button>
+                    <button class="btn-favorito" onclick="agregarFavorito()">❤️</button>
+                </div>
+
+                <!-- Envío y garantía -->
+                <div class="producto-beneficios">
+                    <div class="beneficio">
+                        <span class="beneficio-icono">🚚</span>
+                        <div class="beneficio-texto">
+                            <strong>Envío gratis</strong> en compras superiores a $100
+                        </div>
+                    </div>
+                    <div class="beneficio">
+                        <span class="beneficio-icono">↩️</span>
+                        <div class="beneficio-texto">
+                            <strong>Devoluciones gratis</strong> hasta 30 días
+                        </div>
+                    </div>
+                    <div class="beneficio">
+                        <span class="beneficio-icono">🛡️</span>
+                        <div class="beneficio-texto">
+                            <strong>Garantía</strong> de 1 año en defectos de fabricación
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Descripción extendida y detalles -->
+        <div class="producto-detalles-extendidos">
+            <div class="detalles-tabs">
+                <button class="tab-btn active" onclick="abrirTab('descripcion')">Descripción</button>
+                <button class="tab-btn" onclick="abrirTab('especificaciones')">Especificaciones</button>
+                <button class="tab-btn" onclick="abrirTab('reseñas')">Reseñas</button>
+                <button class="tab-btn" onclick="abrirTab('envio')">Envío y Devoluciones</button>
+            </div>
+
+            <div class="tab-content">
+                <div id="descripcion" class="tab-pane active">
+                    <h3>Descripción Completa</h3>
+                    <p th:text="${producto.descripcion}"></p>
+                    <div class="caracteristicas-lista">
+                        <h4>Características principales:</h4>
+                        <ul>
+                            <li>Material de alta calidad y durabilidad</li>
+                            <li>Diseño ergonómico para máxima comodidad</li>
+                            <li>Disponible en múltiples tallas</li>
+                            <li>Perfecto para uso diario y ocasiones especiales</li>
+                            <li>Garantía de satisfacción del 100%</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div id="especificaciones" class="tab-pane">
+                    <h3>Especificaciones Técnicas</h3>
+                    <div class="especificaciones-grid">
+                        <div class="especificacion">
+                            <span class="espec-label">Material:</span>
+                            <span class="espec-value">Cuero genuino/Poliéster</span>
+                        </div>
+                        <div class="especificacion">
+                            <span class="espec-label">Forro:</span>
+                            <span class="espec-value">Textil transpirable</span>
+                        </div>
+                        <div class="especificacion">
+                            <span class="espec-label">Suela:</span>
+                            <span class="espec-value">Caucho de alta tracción</span>
+                        </div>
+                        <div class="especificacion">
+                            <span class="espec-label">Cierre:</span>
+                            <span class="espec-value">Cordones tradicionales</span>
+                        </div>
+                        <div class="especificacion">
+                            <span class="espec-label">Peso:</span>
+                            <span class="espec-value">350g (talla 40)</span>
+                        </div>
+                        <div class="especificacion">
+                            <span class="espec-label">Origen:</span>
+                            <span class="espec-value">Importado</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="reseñas" class="tab-pane">
+                    <h3>Reseñas de Clientes</h3>
+                    <div class="reseñas-resumen">
+                        <div class="rating-promedio">
+                            <div class="puntuacion">4.5</div>
+                            <div class="estrellas-promedio">⭐⭐⭐⭐⭐</div>
+                            <div class="total-resenas">128 reseñas</div>
+                        </div>
+                        <div class="rating-distribucion">
+                            <div class="dist-item">
+                                <span>5 estrellas</span>
+                                <div class="dist-bar"><div class="dist-fill" style="width: 70%;"></div></div>
+                                <span>70%</span>
+                            </div>
+                            <div class="dist-item">
+                                <span>4 estrellas</span>
+                                <div class="dist-bar"><div class="dist-fill" style="width: 20%;"></div></div>
+                                <span>20%</span>
+                            </div>
+                            <div class="dist-item">
+                                <span>3 estrellas</span>
+                                <div class="dist-bar"><div class="dist-fill" style="width: 7%;"></div></div>
+                                <span>7%</span>
+                            </div>
+                            <div class="dist-item">
+                                <span>2 estrellas</span>
+                                <div class="dist-bar"><div class="dist-fill" style="width: 2%;"></div></div>
+                                <span>2%</span>
+                            </div>
+                            <div class="dist-item">
+                                <span>1 estrella</span>
+                                <div class="dist-bar"><div class="dist-fill" style="width: 1%;"></div></div>
+                                <span>1%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="envio" class="tab-pane">
+                    <h3>Envío y Devoluciones</h3>
+                    <div class="envio-info">
+                        <h4>🚚 Opciones de Envío:</h4>
+                        <ul>
+                            <li><strong>Envío Estándar:</strong> $10 - 3-5 días hábiles</li>
+                            <li><strong>Envío Express:</strong> $20 - 1-2 días hábiles</li>
+                            <li><strong>Envío Gratis:</strong> En compras mayores a $100</li>
+                        </ul>
+                        
+                        <h4>↩️ Política de Devoluciones:</h4>
+                        <ul>
+                            <li>30 días para devoluciones y cambios</li>
+                            <li>Producto debe estar en condiciones originales</li>
+                            <li>Devolución del 100% del dinero</li>
+                            <li>El envío de devolución es gratis</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Productos relacionados -->
+        <section class="productos-relacionados">
+            <h2>Productos Relacionados</h2>
+            <div class="productos-grid">
+                <!-- Los productos relacionados se cargarían dinámicamente -->
+                <div class="producto-card">
+                    <img src="/images/related-1.jpg" alt="Producto relacionado">
+                    <div class="producto-info">
+                        <h3>Zapatillas Running Pro</h3>
+                        <p class="precio">$139.99</p>
+                        <button class="btn btn-outline">Ver Detalles</button>
+                    </div>
+                </div>
+                <!-- Más productos relacionados -->
+            </div>
+        </section>
+    </main>
+
+    <div th:replace="fragments/footer :: footer"></div>
+
+    <script>
+    // Variables para el estado del producto
+    let tallaSeleccionada = null;
+    let cantidadSeleccionada = 1;
+    let productoId = [[${producto.id}]];
+
+    function seleccionarTalla(elemento, talla) {
+        // Remover selección anterior
+        document.querySelectorAll('.talla-option').forEach(t => {
+            t.classList.remove('selected');
+        });
+        
+        // Seleccionar nueva talla
+        elemento.classList.add('selected');
+        tallaSeleccionada = talla;
+        
+        // Actualizar UI
+        document.querySelector('.btn-agregar-carrito').disabled = false;
+        document.querySelector('.btn-comprar-ahora').disabled = false;
+    }
+
+    function modificarCantidad(cambio) {
+        const nuevaCantidad = cantidadSeleccionada + cambio;
+        const stock = [[${producto.stock}]];
+        const maxPorPedido = [[${producto.maxPorPedido}]] || 5;
+        
+        if (nuevaCantidad >= 1 && nuevaCantidad <= Math.min(stock, maxPorPedido)) {
+            cantidadSeleccionada = nuevaCantidad;
+            document.getElementById('cantidadValue').textContent = nuevaCantidad;
+        }
+    }
+
+    function agregarAlCarritoDesdeDetalle() {
+        if (!tallaSeleccionada) {
+            alert('Por favor selecciona una talla');
+            return;
+        }
+        
+        agregarAlCarrito(productoId, tallaSeleccionada, cantidadSeleccionada);
+    }
+
+    function comprarAhora() {
+        if (!tallaSeleccionada) {
+            alert('Por favor selecciona una talla');
+            return;
+        }
+        
+        if (agregarAlCarrito(productoId, tallaSeleccionada, cantidadSeleccionada)) {
+            // Redirigir al checkout si se agregó exitosamente
+            setTimeout(() => {
+                window.location.href = '/checkout';
+            }, 1000);
+        }
+    }
+
+    function agregarFavorito() {
+        // Lógica para agregar a favoritos
+        alert('Producto agregado a favoritos');
+    }
+
+    function cambiarImagen(miniatura) {
+        const imagenPrincipal = document.getElementById('imagenPrincipal');
+        const nuevaImagen = miniatura.querySelector('img').src;
+        imagenPrincipal.src = nuevaImagen;
+        
+        // Actualizar miniaturas activas
+        document.querySelectorAll('.miniatura').forEach(m => {
+            m.classList.remove('active');
+        });
+        miniatura.classList.add('active');
+    }
+
+    function abrirTab(tabName) {
+        // Ocultar todos los tabs
+        document.querySelectorAll('.tab-pane').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        
+        // Mostrar tab seleccionado
+        document.getElementById(tabName).classList.add('active');
+        event.target.classList.add('active');
+    }
+    </script>
+
+    <style>
+    .producto-detalle-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 3rem;
+        margin-bottom: 4rem;
+    }
+
+    .producto-galeria {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .galeria-principal {
+        border: 1px solid var(--light-gray);
+        border-radius: var(--border-radius);
+        padding: 2rem;
+        text-align: center;
+    }
+
+    .galeria-principal img {
+        max-width: 100%;
+        height: 400px;
+        object-fit: contain;
+    }
+
+    .galeria-miniaturas {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: center;
+    }
+
+    .miniatura {
+        width: 60px;
+        height: 60px;
+        border: 2px solid transparent;
+        border-radius: var(--border-radius);
+        cursor: pointer;
+        padding: 0.25rem;
+    }
+
+    .miniatura.active {
+        border-color: var(--primary-color);
+    }
+
+    .miniatura img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 4px;
+    }
+
+    .producto-info-detalle {
+        padding: 1rem;
+    }
+
+    .producto-badge {
+        background: var(--primary-color);
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        display: inline-block;
+        margin-bottom: 1rem;
+    }
+
+    .producto-precio-detalle {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin: 1rem 0;
+    }
+
+    .precio-actual {
+        font-size: 2rem;
+        font-weight: bold;
+        color: var(--primary-color);
+    }
+
+    .precio-original {
+        font-size: 1.2rem;
+        color: #999;
+        text-decoration: line-through;
+    }
+
+    .descuento-badge {
+        background: #27ae60;
+        color: white;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+
+    .producto-rating {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin: 1rem 0;
+    }
+
+    .estrellas {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .rating-text {
+        margin-left: 0.5rem;
+        font-weight: 500;
+    }
+
+    .ver-resenas {
+        color: var(--accent-color);
+        text-decoration: none;
+        font-size: 0.9rem;
+    }
+
+    .producto-descripcion-detalle {
+        font-size: 1.1rem;
+        line-height: 1.6;
+        color: #666;
+        margin: 1.5rem 0;
+    }
+
+    .talla-selector {
+        margin: 2rem 0;
+    }
+
+    .talla-selector label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .tallas-disponibles {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .talla-option {
+        width: 50px;
+        height: 50px;
+        border: 2px solid #ddd;
+        border-radius: var(--border-radius);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .talla-option.disponible:hover {
+        border-color: var(--accent-color);
+    }
+
+    .talla-option.selected {
+        border-color: var(--primary-color);
+        background: var(--primary-color);
+        color: white;
+    }
+
+    .talla-option.agotado {
+        background: var(--light-gray);
+        color: #999;
+        cursor: not-allowed;
+        text-decoration: line-through;
+    }
+
+    .guia-tallas {
+        color: var(--accent-color);
+        text-decoration: none;
+        font-size: 0.9rem;
+    }
+
+    .cantidad-selector {
+        margin: 2rem 0;
+    }
+
+    .cantidad-selector label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .cantidad-controls {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .cantidad-btn {
+        width: 40px;
+        height: 40px;
+        border: 1px solid #ddd;
+        background: white;
+        border-radius: var(--border-radius);
+        cursor: pointer;
+        font-size: 1.2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .cantidad-value {
+        font-size: 1.2rem;
+        font-weight: 600;
+        min-width: 40px;
+        text-align: center;
+    }
+
+    .stock-info {
+        font-size: 0.9rem;
+        color: #666;
+    }
+
+    .max-unidades {
+        font-size: 0.8rem;
+        color: #999;
+        margin-left: 0.5rem;
+    }
+
+    .producto-acciones-detalle {
+        display: flex;
+        gap: 1rem;
+        margin: 2rem 0;
+    }
+
+    .btn-agregar-carrito,
+    .btn-comprar-ahora {
+        flex: 1;
+        padding: 1rem 2rem;
+        font-size: 1.1rem;
+    }
+
+    .btn-agregar-carrito:disabled,
+    .btn-comprar-ahora:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .btn-favorito {
+        width: 50px;
+        height: 50px;
+        border: 1px solid #ddd;
+        background: white;
+        border-radius: var(--border-radius);
+        cursor: pointer;
+        font-size: 1.2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .producto-beneficios {
+        background: var(--light-gray);
+        padding: 1.5rem;
+        border-radius: var(--border-radius);
+    }
+
+    .beneficio {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .beneficio:last-child {
+        margin-bottom: 0;
+    }
+
+    .beneficio-icono {
+        font-size: 1.5rem;
+    }
+
+    .beneficio-texto {
+        font-size: 0.9rem;
+    }
+
+    .producto-detalles-extendidos {
+        margin: 4rem 0;
+    }
+
+    .detalles-tabs {
+        display: flex;
+        border-bottom: 2px solid var(--light-gray);
+        margin-bottom: 2rem;
+    }
+
+    .tab-btn {
+        background: none;
+        border: none;
+        padding: 1rem 2rem;
+        cursor: pointer;
+        font-size: 1rem;
+        border-bottom: 2px solid transparent;
+        margin-bottom: -2px;
+    }
+
+    .tab-btn.active {
+        border-bottom-color: var(--primary-color);
+        color: var(--primary-color);
+        font-weight: 600;
+    }
+
+    .tab-pane {
+        display: none;
+    }
+
+    .tab-pane.active {
+        display: block;
+        animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    .caracteristicas-lista ul {
+        list-style: none;
+        padding: 0;
+    }
+
+    .caracteristicas-lista li {
+        padding: 0.5rem 0;
+        position: relative;
+        padding-left: 1.5rem;
+    }
+
+    .caracteristicas-lista li:before {
+        content: '✓';
+        position: absolute;
+        left: 0;
+        color: #27ae60;
+        font-weight: bold;
+    }
+
+    .especificaciones-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+    }
+
+    .especificacion {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid var(--light-gray);
+    }
+
+    .espec-label {
+        font-weight: 500;
+        color: var(--secondary-color);
+    }
+
+    .espec-value {
+        color: #666;
+    }
+
+    .reseñas-resumen {
+        display: grid;
+        grid-template-columns: 200px 1fr;
+        gap: 3rem;
+    }
+
+    .rating-promedio {
+        text-align: center;
+    }
+
+    .puntuacion {
+        font-size: 3rem;
+        font-weight: bold;
+        color: var(--primary-color);
+    }
+
+    .estrellas-promedio {
+        font-size: 1.5rem;
+        margin: 0.5rem 0;
+    }
+
+    .total-resenas {
+        color: #666;
+    }
+
+    .dist-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .dist-bar {
+        flex: 1;
+        height: 8px;
+        background: var(--light-gray);
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    .dist-fill {
+        height: 100%;
+        background: var(--primary-color);
+    }
+
+    .envio-info ul {
+        list-style: none;
+        padding: 0;
+    }
+
+    .envio-info li {
+        padding: 0.5rem 0;
+        padding-left: 1rem;
+        position: relative;
+    }
+
+    .envio-info li:before {
+        content: '•';
+        position: absolute;
+        left: 0;
+        color: var(--primary-color);
+    }
+
+    .productos-relacionados {
+        margin-top: 4rem;
+    }
+
+    @media (max-width: 968px) {
+        .producto-detalle-container {
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+        
+        .reseñas-resumen {
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .detalles-tabs {
+            flex-wrap: wrap;
+        }
+        
+        .tab-btn {
+            flex: 1;
+            min-width: 120px;
+            text-align: center;
+        }
+        
+        .producto-acciones-detalle {
+            flex-direction: column;
+        }
+    }
+    </style>
+</body>
+</html>

@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<!--
+Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+Click nbfs://nbhost/SystemFileSystem/Templates/Other/html.html to edit this template
+-->
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/header :: head">
+    <title>Iniciar Sesión - StepUp Shoes</title>
+</head>
+<body>
+    <div th:replace="fragments/header :: header"></div>
+    <div th:replace="fragments/nav :: nav"></div>
+
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h1>Iniciar Sesión</h1>
+                <p>Accede a tu cuenta para continuar comprando</p>
+            </div>
+
+            <form id="loginForm" class="auth-form" th:action="@{/login}" method="post">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" placeholder="tu@email.com" required>
+                    <div class="error-message" id="error-email"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Contraseña</label>
+                    <input type="password" id="password" name="password" placeholder="Tu contraseña" required>
+                    <div class="error-message" id="error-password"></div>
+                </div>
+
+                <div class="form-options">
+                    <label class="remember-me">
+                        <input type="checkbox" name="remember-me">
+                        Recordar mi sesión
+                    </label>
+                    <a th:href="@{/recuperar-contrasena}" class="forgot-password">
+                        ¿Olvidaste tu contraseña?
+                    </a>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-auth">
+                    Iniciar Sesión
+                </button>
+
+                <div class="auth-divider">
+                    <span>o continuar con</span>
+                </div>
+
+                <div class="social-auth">
+                    <button type="button" class="btn btn-social btn-google">
+                        <img src="/images/google-icon.svg" alt="Google" style="width: 20px; height: 20px;">
+                        Google
+                    </button>
+                    <button type="button" class="btn btn-social btn-facebook">
+                        <img src="/images/facebook-icon.svg" alt="Facebook" style="width: 20px; height: 20px;">
+                        Facebook
+                    </button>
+                </div>
+
+                <div class="auth-switch">
+                    ¿No tienes cuenta? <a th:href="@{/registro}">Regístrate aquí</a>
+                </div>
+            </form>
+        </div>
+
+        <div class="auth-benefits">
+            <h3>Beneficios de tener una cuenta</h3>
+            <div class="benefits-list">
+                <div class="benefit-item">
+                    <span class="benefit-icon">🚚</span>
+                    <div class="benefit-text">
+                        <strong>Envío más rápido</strong>
+                        <p>Guarda tu información de envío</p>
+                    </div>
+                </div>
+                <div class="benefit-item">
+                    <span class="benefit-icon">📦</span>
+                    <div class="benefit-text">
+                        <strong>Seguimiento de pedidos</strong>
+                        <p>Revisa el estado de tus compras</p>
+                    </div>
+                </div>
+                <div class="benefit-item">
+                    <span class="benefit-icon">⭐</span>
+                    <div class="benefit-text">
+                        <strong>Ofertas exclusivas</strong>
+                        <p>Recibe promociones especiales</p>
+                    </div>
+                </div>
+                <div class="benefit-item">
+                    <span class="benefit-icon">❤️</span>
+                    <div class="benefit-text">
+                        <strong>Lista de deseos</strong>
+                        <p>Guarda tus productos favoritos</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div th:replace="fragments/footer :: footer"></div>
+
+    <style>
+    .auth-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        min-height: 80vh;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+        gap: 3rem;
+        align-items: center;
+    }
+
+    .auth-card {
+        background: var(--white);
+        padding: 3rem;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        max-width: 400px;
+        margin: 0 auto;
+        width: 100%;
+    }
+
+    .auth-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .auth-header h1 {
+        color: var(--secondary-color);
+        margin-bottom: 0.5rem;
+    }
+
+    .auth-header p {
+        color: #666;
+    }
+
+    .auth-form {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .form-group label {
+        font-weight: 500;
+        color: var(--secondary-color);
+    }
+
+    .form-group input {
+        padding: 1rem;
+        border: 1px solid #ddd;
+        border-radius: var(--border-radius);
+        font-size: 1rem;
+        transition: border-color 0.3s ease;
+    }
+
+    .form-group input:focus {
+        outline: none;
+        border-color: var(--accent-color);
+        box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+    }
+
+    .error-message {
+        color: #e74c3c;
+        font-size: 0.8rem;
+        display: none;
+    }
+
+    .error-message.show {
+        display: block;
+    }
+
+    .form-options {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.9rem;
+    }
+
+    .remember-me {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+    }
+
+    .forgot-password {
+        color: var(--accent-color);
+        text-decoration: none;
+    }
+
+    .forgot-password:hover {
+        text-decoration: underline;
+    }
+
+    .btn-auth {
+        padding: 1rem;
+        font-size: 1.1rem;
+    }
+
+    .auth-divider {
+        text-align: center;
+        position: relative;
+        margin: 1.5rem 0;
+    }
+
+    .auth-divider:before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: #ddd;
+    }
+
+    .auth-divider span {
+        background: var(--white);
+        padding: 0 1rem;
+        color: #666;
+        font-size: 0.9rem;
+    }
+
+    .social-auth {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .btn-social {
+        flex: 1;
+        padding: 0.75rem;
+        border: 1px solid #ddd;
+        background: var(--white);
+        border-radius: var(--border-radius);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+    }
+
+    .btn-social:hover {
+        border-color: var(--accent-color);
+        background: var(--light-gray);
+    }
+
+    .auth-switch {
+        text-align: center;
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #eee;
+    }
+
+    .auth-switch a {
+        color: var(--accent-color);
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .auth-switch a:hover {
+        text-decoration: underline;
+    }
+
+    .auth-benefits {
+        padding: 2rem;
+    }
+
+    .auth-benefits h3 {
+        color: var(--secondary-color);
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+
+    .benefits-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .benefit-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        background: var(--white);
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+    }
+
+    .benefit-icon {
+        font-size: 2rem;
+        width: 60px;
+        text-align: center;
+    }
+
+    .benefit-text strong {
+        display: block;
+        color: var(--secondary-color);
+        margin-bottom: 0.25rem;
+    }
+
+    .benefit-text p {
+        color: #666;
+        margin: 0;
+        font-size: 0.9rem;
+    }
+
+    @media (max-width: 968px) {
+        .auth-container {
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+        
+        .auth-benefits {
+            order: -1;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .auth-container {
+            padding: 1rem;
+        }
+        
+        .auth-card {
+            padding: 2rem;
+        }
+        
+        .form-options {
+            flex-direction: column;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+        
+        .social-auth {
+            flex-direction: column;
+        }
+    }
+    </style>
+</body>
+</html>

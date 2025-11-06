@@ -2,6 +2,7 @@ package com.stepup.shoes.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -21,12 +22,16 @@ public class Producto {
     @Column(nullable = false)
     private Double precio;
     
+    private Double precioOriginal;
+    
     private Integer stock;
     
-    @Column(name = "imagen_url")
     private String imagenUrl;
     
     private Boolean destacado = false;
+    
+    // ✅ AGREGAR ESTE CAMPO FALTANTE
+    private Boolean activo = true;
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "categoria_id")
@@ -36,4 +41,10 @@ public class Producto {
     @CollectionTable(name = "producto_tallas", joinColumns = @JoinColumn(name = "producto_id"))
     @Column(name = "talla")
     private List<Integer> tallasDisponibles;
+    
+    @Column(name = "fecha_creacion")
+    private LocalDateTime fechaCreacion = LocalDateTime.now();
+    
+    @Column(name = "fecha_actualizacion")
+    private LocalDateTime fechaActualizacion = LocalDateTime.now();
 }
