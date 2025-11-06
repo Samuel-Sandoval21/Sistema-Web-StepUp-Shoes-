@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/header :: head"></head>
+<body>
+    <div th:replace="fragments/header :: header"></div>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <h1>Encuentra tu Estilo Perfecto</h1>
+            <p>Descubre la colección más moderna de calzado para todos los gustos y ocasiones</p>
+            <a th:href="@{/catalogo}" class="btn btn-primary">Explora Catálogo</a>
+        </div>
+    </section>
+
+    <!-- Promociones -->
+    <section class="promociones" style="background: #fff3cd; padding: 2rem 0; text-align: center;">
+        <div class="container">
+            <h2 style="color: #856404; margin-bottom: 1rem;">¡Promociones Activas!</h2>
+            <p style="color: #856404; font-size: 1.1rem;">
+                <strong>20% de descuento:</strong> En toda la colección de zapatillas deportivas<br>
+                <strong>Envío gratis:</strong> En compras superiores a $100
+            </p>
+        </div>
+    </section>
+
+    <!-- Productos Destacados -->
+    <section class="features">
+        <div class="container">
+            <h2 style="text-align: center; margin-bottom: 3rem;">Nuestros Productos Destacados</h2>
+            
+            <div class="productos-grid">
+                <div th:each="producto : ${productosDestacados}" class="producto-card">
+                    <img th:src="${producto.imagenUrl}" th:alt="${producto.nombre}" class="producto-imagen">
+                    <div class="destacado-badge">⭐ Destacado</div>
+                    <div class="producto-info">
+                        <h3 class="producto-nombre" th:text="${producto.nombre}"></h3>
+                        <p class="producto-precio" th:text="'$' + ${#numbers.formatDecimal(producto.precio, 1, 2)}"></p>
+                        <p class="producto-descripcion" th:text="${producto.descripcion}"></p>
+                        <div class="producto-actions">
+                            <button onclick="abrirDetalleProducto([[${producto.id}]])" class="btn btn-outline">Ver Detalles</button>
+                            <button onclick="agregarAlCarrito([[${producto.id}]])" class="btn btn-primary">Añadir al Carrito</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 2rem;">
+                <a th:href="@{/catalogo}" class="btn btn-secondary">Ver Catálogo Completo</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Por qué elegirnos -->
+    <section style="padding: 4rem 0; background: var(--white);">
+        <div class="container">
+            <h2 style="text-align: center; margin-bottom: 3rem;">¿Por qué elegir StepUp Shoes?</h2>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">✅</div>
+                    <h3>Calidad Garantizada</h3>
+                    <p>Todos nuestros productos pasan por rigurosos controles de calidad para garantizar tu satisfacción.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">💰</div>
+                    <h3>Precios Competitivos</h3>
+                    <p>Ofrecemos los mejores precios del mercado sin comprometer la calidad de nuestros productos.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">👥</div>
+                    <h3>Atención al Cliente</h3>
+                    <p>Nuestro equipo está disponible 24/7 para ayudarte con cualquier consulta o problema.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div th:replace="fragments/footer :: footer"></div>
+
+    <!-- Popups -->
+    <div th:replace="fragments/popups :: popups"></div>
+</body>
+</html>
