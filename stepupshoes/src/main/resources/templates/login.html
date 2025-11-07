@@ -4,12 +4,11 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to c
 Click nbfs://nbhost/SystemFileSystem/Templates/Other/html.html to edit this template
 -->
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="fragments/header :: head">
+<head th:replace="~{fragments/header :: head}">
     <title>Iniciar Sesión - StepUp Shoes</title>
 </head>
 <body>
-    <div th:replace="fragments/header :: header"></div>
-    <div th:replace="fragments/nav :: nav"></div>
+    <div th:replace="~{fragments/header :: header}"></div>
 
     <div class="auth-container">
         <div class="auth-card">
@@ -18,16 +17,26 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/html.html to edit this temp
                 <p>Accede a tu cuenta para continuar comprando</p>
             </div>
 
+            <!-- Mensajes de Spring Security -->
+            <div th:if="${param.error}" class="alert alert-danger" style="background: #f8d7da; color: #721c24; padding: 1rem; border-radius: 5px; margin-bottom: 1rem;">
+                ❌ Usuario o contraseña incorrectos
+            </div>
+            
+            <div th:if="${param.logout}" class="alert alert-success" style="background: #d1edff; color: #155724; padding: 1rem; border-radius: 5px; margin-bottom: 1rem;">
+                ✅ Has cerrado sesión exitosamente
+            </div>
+
+            <!-- IMPORTANTE: Spring Security usa "username" no "email" -->
             <form id="loginForm" class="auth-form" th:action="@{/login}" method="post">
                 <div class="form-group">
-                    <label for="email">Email</label>
-                    <input type="email" id="email" name="email" placeholder="tu@email.com" required>
-                    <div class="error-message" id="error-email"></div>
+                    <label for="username">Usuario</label>
+                    <input type="text" id="username" name="username" placeholder="admin" required>
+                    <div class="error-message" id="error-username"></div>
                 </div>
 
                 <div class="form-group">
                     <label for="password">Contraseña</label>
-                    <input type="password" id="password" name="password" placeholder="Tu contraseña" required>
+                    <input type="password" id="password" name="password" placeholder="admin123" required>
                     <div class="error-message" id="error-password"></div>
                 </div>
 
@@ -46,18 +55,14 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/html.html to edit this temp
                 </button>
 
                 <div class="auth-divider">
-                    <span>o continuar con</span>
+                    <span>Credenciales de prueba</span>
                 </div>
 
-                <div class="social-auth">
-                    <button type="button" class="btn btn-social btn-google">
-                        <img src="/images/google-icon.svg" alt="Google" style="width: 20px; height: 20px;">
-                        Google
-                    </button>
-                    <button type="button" class="btn btn-social btn-facebook">
-                        <img src="/images/facebook-icon.svg" alt="Facebook" style="width: 20px; height: 20px;">
-                        Facebook
-                    </button>
+                <div class="demo-credentials" style="background: #f8f9fa; padding: 1rem; border-radius: 5px; text-align: center; margin: 1rem 0;">
+                    <p style="margin: 0; font-size: 0.9rem; color: #666;">
+                        <strong>Usuario:</strong> admin<br>
+                        <strong>Contraseña:</strong> admin123
+                    </p>
                 </div>
 
                 <div class="auth-switch">
@@ -101,7 +106,7 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/html.html to edit this temp
         </div>
     </div>
 
-    <div th:replace="fragments/footer :: footer"></div>
+    <div th:replace="~{fragments/footer :: footer}"></div>
 
     <style>
     .auth-container {
@@ -206,6 +211,16 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/html.html to edit this temp
     .btn-auth {
         padding: 1rem;
         font-size: 1.1rem;
+        background: var(--accent-color);
+        color: white;
+        border: none;
+        border-radius: var(--border-radius);
+        cursor: pointer;
+        transition: background 0.3s ease;
+    }
+
+    .btn-auth:hover {
+        background: #2980b9;
     }
 
     .auth-divider {
@@ -229,31 +244,6 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/html.html to edit this temp
         padding: 0 1rem;
         color: #666;
         font-size: 0.9rem;
-    }
-
-    .social-auth {
-        display: flex;
-        gap: 1rem;
-    }
-
-    .btn-social {
-        flex: 1;
-        padding: 0.75rem;
-        border: 1px solid #ddd;
-        background: var(--white);
-        border-radius: var(--border-radius);
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.5rem;
-        font-size: 0.9rem;
-        transition: all 0.3s ease;
-    }
-
-    .btn-social:hover {
-        border-color: var(--accent-color);
-        background: var(--light-gray);
     }
 
     .auth-switch {
@@ -341,10 +331,6 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/html.html to edit this temp
             flex-direction: column;
             gap: 1rem;
             align-items: flex-start;
-        }
-        
-        .social-auth {
-            flex-direction: column;
         }
     }
     </style>

@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="fragments/header :: head"></head>
+<head th:replace="~{fragments/header :: head}"></head>
 <body>
-    <div th:replace="fragments/header :: header"></div>
+    <div th:replace="~{fragments/header :: header}"></div>
 
     <!-- Hero Section -->
     <section class="hero">
@@ -38,8 +38,8 @@
                         <p class="producto-precio" th:text="'$' + ${#numbers.formatDecimal(producto.precio, 1, 2)}"></p>
                         <p class="producto-descripcion" th:text="${producto.descripcion}"></p>
                         <div class="producto-actions">
-                            <button onclick="abrirDetalleProducto([[${producto.id}]])" class="btn btn-outline">Ver Detalles</button>
-                            <button onclick="agregarAlCarrito([[${producto.id}]])" class="btn btn-primary">Añadir al Carrito</button>
+                            <button th:onclick="'abrirDetalleProducto(' + ${producto.id} + ')'" class="btn btn-outline">Ver Detalles</button>
+                            <button th:onclick="'agregarAlCarrito(' + ${producto.id} + ')'" class="btn btn-primary">Añadir al Carrito</button>
                         </div>
                     </div>
                 </div>
@@ -78,11 +78,13 @@
         </div>
     </section>
 
-    <div th:replace="fragments/footer :: footer"></div>
+    <div th:replace="~{fragments/footer :: footer}"></div>
 
-    <!-- Popups -->
-    <div th:replace="fragments/popups :: popups"></div>
-    <div th:replace="fragments/auth-popups :: auth-popups"></div>
-<div th:replace="fragments/carrito-popup :: carrito-popup"></div>
+    <!-- Popups - COMENTAR LOS QUE NO EXISTEN -->
+    <div th:replace="~{fragments/popups :: popups}"></div>
+    <!-- 
+    <div th:replace="~{fragments/auth-popups :: auth-popups}"></div>
+    <div th:replace="~{fragments/carrito-popup :: carrito-popup}"></div>
+    -->
 </body>
 </html>

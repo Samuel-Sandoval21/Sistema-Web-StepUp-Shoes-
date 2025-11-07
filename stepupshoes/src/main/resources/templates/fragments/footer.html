@@ -1,4 +1,6 @@
 <!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<div th:fragment="footer">
     <footer class="footer">
         <div class="container">
             <div class="footer-content">
@@ -23,7 +25,8 @@
                         <li><a href="#">Guía de tallas</a></li>
                         <li><a href="#">Política de devoluciones</a></li>
                         <li><a href="#">Envíos y entregas</a></li>
-                        <li><a href="#">Contacto</a></li>
+                        <!-- ✅ CAMBIADO: href="#" por th:href="@{/contacto}" -->
+                        <li><a th:href="@{/contacto}">Contacto</a></li>
                     </ul>
                 </div>
                 
@@ -39,17 +42,9 @@
             </div>
             
             <div class="footer-bottom">
-                <p>&copy; 2024 StepUp Shoes. Todos los derechos reservados.</p>
+                <p>&copy; 2025 StepUp Shoes. Todos los derechos reservados.</p>
             </div>
         </div>
     </footer>
-
-    <!-- Scripts -->
-    <script th:src="@{/js/main.js}"></script>
-    <script th:src="@{/js/carrito.js}"></script>
-    <script th:src="@{/js/auth.js}"></script>
-    <script th:src="@{/js/auth.js}"></script>
-<script th:src="@{/js/carrito.js}"></script>
-<script th:src="@{/js/checkout.js}"></script>
-</body>
+</div>
 </html>
