@@ -1,119 +1,98 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="fragments/header :: head"></head>
+<head th:replace="~{fragments/header :: head}"></head>
 <body>
-    <div th:replace="fragments/header :: header"></div>
+    <div th:replace="~{fragments/header :: header}"></div>
 
-    <!-- Breadcrumb -->
-    <div class="breadcrumb">
-        <div class="container">
-            <ul class="breadcrumb-links">
-                <li><a th:href="@{/}">Inicio</a></li>
-                <li class="separator">/</li>
-                <li>Catálogo</li>
-            </ul>
-        </div>
-    </div>
-
-    <main class="container">
-        <h1 style="margin-bottom: 2rem;">Nuestro Catálogo</h1>
-
-        <!-- Filtros -->
-        <div class="filtros-container">
-            <form id="filtrosForm" method="get">
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem;">
-                    <!-- Filtro por categoría -->
-                    <div class="filtro-grupo">
-                        <h4>Categorías</h4>
-                        <div th:each="categoria : ${categorias}">
-                            <input type="radio" th:id="'cat_' + ${categoria.nombre}" 
-                                   th:name="categoria" th:value="${categoria.nombre}"
-                                   th:checked="${categoriaSeleccionada == categoria.nombre}">
-                            <label th:for="'cat_' + ${categoria.nombre}" th:text="${categoria.nombre}"></label>
+    <!-- Contenido Principal -->
+    <main class="container my-5">
+        <div class="row">
+            <div class="col-12">
+                <h1 class="mb-4">🛍️ Catálogo de Productos</h1>
+                
+                <!-- Filtros -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Filtrar Productos</h5>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <label for="categoria" class="form-label">Categoría</label>
+                                <select class="form-select" id="categoria">
+                                    <option value="">Todas las categorías</option>
+                                    <option value="deportiva">Deportiva</option>
+                                    <option value="casual">Casual</option>
+                                    <option value="formal">Formal</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="precio" class="form-label">Rango de Precio</label>
+                                <select class="form-select" id="precio">
+                                    <option value="">Todos los precios</option>
+                                    <option value="0-50">$0 - $50</option>
+                                    <option value="50-100">$50 - $100</option>
+                                    <option value="100-999">$100+</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="ordenar" class="form-label">Ordenar por</label>
+                                <select class="form-select" id="ordenar">
+                                    <option value="nombre">Nombre A-Z</option>
+                                    <option value="precio-asc">Precio: Menor a Mayor</option>
+                                    <option value="precio-desc">Precio: Mayor a Menor</option>
+                                </select>
+                            </div>
                         </div>
-                        <input type="radio" id="cat_todas" name="categoria" value="" 
-                               th:checked="${categoriaSeleccionada == null}">
-                        <label for="cat_todas">Todas las categorías</label>
-                    </div>
-
-                    <!-- Filtro por precio -->
-                    <div class="filtro-grupo">
-                        <h4>Rango de Precio</h4>
-                        <input type="radio" id="precio_todos" name="rangoPrecio" value="" 
-                               th:checked="${rangoPrecioSeleccionado == null}">
-                        <label for="precio_todos">Todos los precios</label>
-                        
-                        <input type="radio" id="precio_menos50" name="rangoPrecio" value="menos-50"
-                               th:checked="${rangoPrecioSeleccionado == 'menos-50'}">
-                        <label for="precio_menos50">Menos de $50</label>
-                        
-                        <input type="radio" id="precio_50-100" name="rangoPrecio" value="50-100"
-                               th:checked="${rangoPrecioSeleccionado == '50-100'}">
-                        <label for="precio_50-100">$50 - $100</label>
-                        
-                        <input type="radio" id="precio_100-150" name="rangoPrecio" value="100-150"
-                               th:checked="${rangoPrecioSeleccionado == '100-150'}">
-                        <label for="precio_100-150">$100 - $150</label>
-                        
-                        <input type="radio" id="precio_150-200" name="rangoPrecio" value="150-200"
-                               th:checked="${rangoPrecioSeleccionado == '150-200'}">
-                        <label for="precio_150-200">$150 - $200</label>
-                    </div>
-
-                    <!-- Ordenamiento -->
-                    <div class="filtro-grupo">
-                        <h4>Ordenar por</h4>
-                        <select name="orden" id="ordenSelect">
-                            <option value="">Destacados</option>
-                            <option value="precio-asc" th:selected="${ordenSeleccionado == 'precio-asc'}">Precio: Menor a Mayor</option>
-                            <option value="precio-desc" th:selected="${ordenSeleccionado == 'precio-desc'}">Precio: Mayor a Menor</option>
-                            <option value="nombre-asc" th:selected="${ordenSeleccionado == 'nombre-asc'}">Nombre: A - Z</option>
-                        </select>
                     </div>
                 </div>
 
-                <div class="filtro-actions">
-                    <button type="submit" class="btn btn-primary">Aplicar Filtros</button>
-                    <a th:href="@{/catalogo}" class="btn btn-outline">Limpiar Filtros</a>
-                </div>
-            </form>
-        </div>
-
-        <!-- Resultados de búsqueda -->
-        <div th:if="${terminoBusqueda}" style="margin-bottom: 2rem;">
-            <h3>Resultados de búsqueda para: "<span th:text="${terminoBusqueda}"></span>"</h3>
-        </div>
-
-        <!-- Grid de productos -->
-        <div class="productos-grid">
-            <div th:each="producto : ${productos}" class="producto-card">
-                <img th:src="${producto.imagenUrl}" th:alt="${producto.nombre}" class="producto-imagen">
-                <div th:if="${producto.destacado}" class="destacado-badge">⭐ Destacado</div>
-                <div class="producto-info">
-                    <h3 class="producto-nombre" th:text="${producto.nombre}"></h3>
-                    <p class="producto-precio" th:text="'$' + ${#numbers.formatDecimal(producto.precio, 1, 2)}"></p>
-                    <p class="producto-descripcion" th:text="${producto.descripcion}"></p>
-                    <div class="producto-actions">
-                        <button onclick="abrirDetalleProducto([[${producto.id}]])" class="btn btn-outline">Ver Detalles</button>
-                        <button onclick="agregarAlCarrito([[${producto.id}]])" class="btn btn-primary">Añadir al Carrito</button>
+                <!-- Grid de Productos -->
+                <div class="row">
+                    <div th:each="producto : ${productos}" class="col-lg-4 col-md-6 mb-4">
+                        <div class="card h-100 producto-card">
+                            <img th:src="${producto.imagenUrl}" 
+                                 th:alt="${producto.nombre}" 
+                                 class="card-img-top producto-imagen"
+                                 style="height: 200px; object-fit: cover;">
+                            
+                            <div th:if="${producto.destacado}" class="destacado-badge">⭐ Destacado</div>
+                            
+                            <div class="card-body d-flex flex-column">
+                                <h5 class="card-title" th:text="${producto.nombre}"></h5>
+                                <p class="card-text flex-grow-1" th:text="${producto.descripcion}"></p>
+                                <div class="mt-auto">
+                                    <p class="h5 text-primary mb-2" th:text="'$' + ${#numbers.formatDecimal(producto.precio, 1, 2)}"></p>
+                                    <div class="d-grid gap-2">
+                                        <button th:onclick="'abrirDetalleProducto(' + ${producto.id} + ')'" 
+                                                class="btn btn-outline-primary">
+                                            👀 Ver Detalles
+                                        </button>
+                                        <button th:onclick="'agregarAlCarrito(' + ${producto.id} + ')'" 
+                                                class="btn btn-primary">
+                                            🛒 Añadir al Carrito
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
+                </div>
+
+                <!-- Mensaje si no hay productos -->
+                <div th:if="${#lists.isEmpty(productos)}" class="text-center py-5">
+                    <h3>No se encontraron productos</h3>
+                    <p class="text-muted">Intenta con otros filtros de búsqueda.</p>
                 </div>
             </div>
         </div>
-
-        <!-- Mensaje si no hay productos -->
-        <div th:if="${#lists.isEmpty(productos)}" class="no-productos">
-            <h3>No se encontraron productos</h3>
-            <p>Intenta ajustar los filtros o realizar una nueva búsqueda</p>
-            <a th:href="@{/catalogo}" class="btn btn-primary">Limpiar filtros</a>
-        </div>
     </main>
 
-    <div th:replace="fragments/footer :: footer"></div>
+    <div th:replace="~{fragments/footer :: footer}"></div>
 
-    <!-- Popups -->
-    <div th:replace="fragments/popups :: popups"></div>
-    <div th:replace="fragments/auth-popups :: auth-popups"></div>
-<div th:replace="fragments/carrito-popup :: carrito-popup"></div>
+    <!-- Popups - COMENTAR LOS QUE NO EXISTEN -->
+    <div th:replace="~{fragments/popups :: popups}"></div>
+    <!-- 
+    <div th:replace="~{fragments/auth-popups :: auth-popups}"></div>
+    <div th:replace="~{fragments/carrito-popup :: carrito-popup}"></div>
+    -->
 </body>
 </html>

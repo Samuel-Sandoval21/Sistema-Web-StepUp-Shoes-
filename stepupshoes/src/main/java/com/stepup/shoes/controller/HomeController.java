@@ -43,4 +43,23 @@ public class HomeController {
         model.addAttribute("titulo", "Nosotros - StepUp Shoes");
         return "nosotros";
     }
+
+    // ✅ AGREGAR ESTOS MÉTODOS PARA LOGIN
+    @GetMapping("/login")
+    public String login(Model model) {
+        model.addAttribute("titulo", "Iniciar Sesión - StepUp Shoes");
+        return "login";
+    }
+
+    @GetMapping("/registro")
+    public String registro(Model model) {
+        model.addAttribute("titulo", "Registro - StepUp Shoes");
+        return "registro";
+    }
+
+    @GetMapping("/recuperar-contrasena")
+    public String recuperarContrasena(Model model) {
+        model.addAttribute("titulo", "Recuperar Contraseña - StepUp Shoes");
+        return "recuperar-contrasena";
+    }
 }
