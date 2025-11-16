@@ -964,3 +964,24 @@ a:focus {
         color: #e2e8f0;
     }
 }
+
+/* Estilos para imágenes por defecto */
+.producto-imagen,
+.summary-item-image,
+.favorito-image,
+.item-image {
+    object-fit: cover;
+    background-color: #f5f5f5;
+    background-image: url('/images/image-placeholder.svg');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 50px 50px;
+}
+
+/* Cuando la imagen carga correctamente, quitar el fondo */
+.producto-imagen:not([src*="default"]):not([src=""]),
+.summary-item-image:not([src*="default"]):not([src=""]),
+.favorito-image:not([src*="default"]):not([src=""]),
+.item-image:not([src*="default"]):not([src=""]) {
+    background-image: none;
+}
