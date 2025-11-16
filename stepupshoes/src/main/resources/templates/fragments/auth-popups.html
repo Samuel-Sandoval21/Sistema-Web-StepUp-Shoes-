@@ -1,103 +1,29 @@
 <!DOCTYPE html>
-<!--
-Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
-Click nbfs://nbhost/SystemFileSystem/Templates/Other/html.html to edit this template
--->
 <html xmlns:th="http://www.thymeleaf.org">
 <div th:fragment="auth-popups">
-    <!-- Popup Login -->
-    <div id="popup-login" class="popup auth-popup">
-        <div class="popup-content">
-            <button class="popup-close" onclick="cerrarPopUp('popup-login')">&times;</button>
-            
-            <div class="auth-header">
-                <h2>Iniciar Sesión</h2>
-                <p>Accede a tu cuenta para continuar</p>
-            </div>
-            
-            <form id="loginForm" class="auth-form">
-                <div class="form-group">
-                    <label for="login-email">Email</label>
-                    <input type="email" id="login-email" name="email" placeholder="tu@email.com" required>
-                    <div class="error-message"></div>
+    <!-- Modales de autenticación -->
+    <div id="loginModal" class="modal fade" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Iniciar Sesión</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                
-                <div class="form-group">
-                    <label for="login-password">Contraseña</label>
-                    <input type="password" id="login-password" name="password" placeholder="Tu contraseña" required>
-                    <div class="error-message"></div>
+                <div class="modal-body">
+                    <form th:action="@{/login}" method="post">
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Usuario</label>
+                            <input type="text" class="form-control" id="username" name="username" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Contraseña</label>
+                            <input type="password" class="form-control" id="password" name="password" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Iniciar Sesión</button>
+                    </form>
                 </div>
-                
-                <div class="remember-forgot">
-                    <label class="remember-me">
-                        <input type="checkbox" name="rememberMe">
-                        Recordarme
-                    </label>
-                    <a href="#" class="forgot-password">¿Olvidaste tu contraseña?</a>
-                </div>
-                
-                <div class="auth-actions">
-                    <button type="submit" class="btn-auth btn-auth-primary">Iniciar Sesión</button>
-                </div>
-            </form>
-            
-            <div class="auth-switch">
-                ¿No tienes cuenta? <a href="#" onclick="cambiarFormulario('register')">Regístrate aquí</a>
-            </div>
-        </div>
-    </div>
-
-    <!-- Popup Registro -->
-    <div id="popup-registro" class="popup auth-popup">
-        <div class="popup-content">
-            <button class="popup-close" onclick="cerrarPopUp('popup-registro')">&times;</button>
-            
-            <div class="auth-header">
-                <h2>Crear Cuenta</h2>
-                <p>Regístrate para empezar a comprar</p>
-            </div>
-            
-            <form id="registerForm" class="auth-form">
-                <div class="form-group">
-                    <label for="register-nombre">Nombre Completo</label>
-                    <input type="text" id="register-nombre" name="nombre" placeholder="Tu nombre completo" required>
-                    <div class="error-message"></div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="register-email">Email</label>
-                    <input type="email" id="register-email" name="email" placeholder="tu@email.com" required>
-                    <div class="error-message"></div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="register-password">Contraseña</label>
-                    <input type="password" id="register-password" name="password" placeholder="Mínimo 6 caracteres" required>
-                    <div class="error-message"></div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="register-confirm-password">Confirmar Contraseña</label>
-                    <input type="password" id="register-confirm-password" name="confirmPassword" placeholder="Repite tu contraseña" required>
-                    <div class="error-message"></div>
-                </div>
-                
-                <div class="form-group">
-                    <label class="remember-me">
-                        <input type="checkbox" name="terms" required>
-                        Acepto los <a href="#">términos y condiciones</a> y la <a href="#">política de privacidad</a>
-                    </label>
-                    <div class="error-message"></div>
-                </div>
-                
-                <div class="auth-actions">
-                    <button type="submit" class="btn-auth btn-auth-primary">Crear Cuenta</button>
-                </div>
-            </form>
-            
-            <div class="auth-switch">
-                ¿Ya tienes cuenta? <a href="#" onclick="cambiarFormulario('login')">Inicia sesión aquí</a>
             </div>
         </div>
     </div>
 </div>
+</html>

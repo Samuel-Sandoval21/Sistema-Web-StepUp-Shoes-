@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: head}"></head>
+<body>
+    <div th:replace="~{fragments/header :: header}"></div>
+
+    <main class="container my-5">
+        <div class="row">
+            <div class="col-12">
+                <h1 class="mb-4">📞 Contáctanos</h1>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h3 class="card-title">Información de Contacto</h3>
+                                
+                                <div class="contact-info mb-3">
+                                    <h5>📧 Email</h5>
+                                    <p>info@stepupshoes.com</p>
+                                </div>
+                                
+                                <div class="contact-info mb-3">
+                                    <h5>📞 Teléfono</h5>
+                                    <p>+52 123 456 7890</p>
+                                </div>
+                                
+                                <div class="contact-info mb-3">
+                                    <h5>📍 Dirección</h5>
+                                    <p>Calle Principal #123<br>Colonia Centro<br>Ciudad de México, CDMX 06000</p>
+                                </div>
+                                
+                                <div class="contact-info">
+                                    <h5>🕒 Horario de Atención</h5>
+                                    <p>Lunes a Viernes: 9:00 AM - 6:00 PM<br>Sábados: 10:00 AM - 2:00 PM</p>
+                                </div>
+
+                                <div class="mt-4">
+                                    <h5>🌐 Síguenos en:</h5>
+                                    <div class="d-flex gap-3">
+                                        <a href="#" class="btn btn-outline-primary">Facebook</a>
+                                        <a href="#" class="btn btn-outline-info">Instagram</a>
+                                        <a href="#" class="btn btn-outline-dark">Twitter</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 mb-4">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h3 class="card-title">Envía un Mensaje</h3>
+                                <form>
+                                    <div class="mb-3">
+                                        <label for="nombre" class="form-label">Nombre Completo</label>
+                                        <input type="text" class="form-control" id="nombre" required>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="email" class="form-label">Correo Electrónico</label>
+                                        <input type="email" class="form-control" id="email" required>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="telefono" class="form-label">Teléfono</label>
+                                        <input type="tel" class="form-control" id="telefono">
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="asunto" class="form-label">Asunto</label>
+                                        <select class="form-select" id="asunto">
+                                            <option value="">Selecciona un asunto</option>
+                                            <option value="consulta">Consulta General</option>
+                                            <option value="soporte">Soporte Técnico</option>
+                                            <option value="ventas">Información de Ventas</option>
+                                            <option value="devolucion">Devolución o Cambio</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="mensaje" class="form-label">Mensaje</label>
+                                        <textarea class="form-control" id="mensaje" rows="4" required></textarea>
+                                    </div>
+                                    
+                                    <button type="submit" class="btn btn-primary w-100">Enviar Mensaje</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mapa -->
+                <div class="card mt-4">
+                    <div class="card-body">
+                        <h3 class="card-title">🗺️ Nuestra Ubicación</h3>
+                        <div class="bg-light p-4 text-center" style="height: 300px;">
+                            <p class="text-muted">Mapa interactivo de nuestra ubicación</p>
+                            <p>📍 Calle Principal #123, Colonia Centro, CDMX</p>
+                            <a href="#" class="btn btn-outline-success mt-2">Abrir en Google Maps</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

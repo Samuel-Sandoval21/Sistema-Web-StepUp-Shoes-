@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: head}"></head>
+<body>
+    <div th:replace="~{fragments/header :: header}"></div>
+
+    <main class="container my-5">
+        <div class="row">
+            <div class="col-12">
+                <h1 class="mb-4">🎉 Promociones Especiales</h1>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <div class="card border-warning h-100">
+                            <div class="card-header bg-warning text-dark">
+                                <h3 class="card-title mb-0">🔥 Oferta Destacada</h3>
+                            </div>
+                            <div class="card-body">
+                                <h4 class="text-success">20% OFF</h4>
+                                <p class="card-text">En toda la colección de zapatillas deportivas</p>
+                                <p class="text-muted">Válido hasta el 30 de noviembre 2025</p>
+                                <a th:href="@{/catalogo}" class="btn btn-success">Aprovechar Oferta</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 mb-4">
+                        <div class="card border-info h-100">
+                            <div class="card-header bg-info text-white">
+                                <h3 class="card-title mb-0">🚚 Envío Gratis</h3>
+                            </div>
+                            <div class="card-body">
+                                <h4 class="text-primary">GRATIS</h4>
+                                <p class="card-text">En compras superiores a $100</p>
+                                <p class="text-muted">Aplica para toda la república mexicana</p>
+                                <a th:href="@{/catalogo}" class="btn btn-primary">Ver Productos</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Más promociones -->
+                <div class="row mt-4">
+                    <div class="col-md-4 mb-3">
+                        <div class="card border-success h-100">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="card-title mb-0">🎁 2x1</h5>
+                            </div>
+                            <div class="card-body">
+                                <p class="card-text">Lleva 2 pares de calcetines al precio de 1</p>
+                                <small class="text-muted">Válido solo en calcetines deportivos</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4 mb-3">
+                        <div class="card border-danger h-100">
+                            <div class="card-header bg-danger text-white">
+                                <h5 class="card-title mb-0">💥 Liquidación</h5>
+                            </div>
+                            <div class="card-body">
+                                <p class="card-text">Hasta 50% de descuento en modelos de temporada pasada</p>
+                                <small class="text-muted">Sujeto a disponibilidad</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4 mb-3">
+                        <div class="card border-secondary h-100">
+                            <div class="card-header bg-secondary text-white">
+                                <h5 class="card-title mb-0">👑 Cliente VIP</h5>
+                            </div>
+                            <div class="card-body">
+                                <p class="card-text">15% de descuento adicional para clientes frecuentes</p>
+                                <small class="text-muted">Aplica en tu segunda compra</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="alert alert-info mt-4">
+                    <h4>📞 ¿Tienes dudas?</h4>
+                    <p class="mb-0">Contáctanos al +52 123 456 7890 o escríbenos a promociones@stepupshoes.com</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

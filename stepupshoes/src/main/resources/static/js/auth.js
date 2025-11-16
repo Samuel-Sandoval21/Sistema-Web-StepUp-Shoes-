@@ -2,503 +2,757 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Other/javascript.js to edit this template
  */
-// static/js/auth.js - Manejo de autenticación
+// static/js/auth.js - Sistema completo de autenticación StepUp Shoes
 
 /**
- * Funciones para manejar login, registro y autenticación
+ * Sistema de autenticación completo
+ * Maneja login, registro, validación y gestión de sesiones
  */
 
-// Estado de autenticación
-let authState = {
-    isAuthenticated: false,
-    currentUser: null
-};
-
-// Elementos del DOM
-const authElements = {
-    loginForm: null,
-    registerForm: null,
-    loginPopup: null,
-    registerPopup: null
-};
-
-// Inicializar sistema de autenticación
-function initAuth() {
-    console.log('Inicializando sistema de autenticación...');
-    
-    // Obtener elementos del DOM
-    authElements.loginForm = document.getElementById('loginForm');
-    authElements.registerForm = document.getElementById('registerForm');
-    authElements.loginPopup = document.getElementById('popup-login');
-    authElements.registerPopup = document.getElementById('popup-registro');
-    
-    // Verificar si hay usuario logueado
-    checkAuthStatus();
-    
-    // Configurar event listeners
-    setupAuthEventListeners();
-}
-
-// Configurar event listeners para formularios
-function setupAuthEventListeners() {
-    // Formulario de login
-    if (authElements.loginForm) {
-        authElements.loginForm.addEventListener('submit', handleLogin);
-    }
-    
-    // Formulario de registro
-    if (authElements.registerForm) {
-        authElements.registerForm.addEventListener('submit', handleRegister);
-    }
-    
-    // Validación en tiempo real
-    setupRealTimeValidation();
-}
-
-// Validación en tiempo real
-function setupRealTimeValidation() {
-    const emailInputs = document.querySelectorAll('input[type="email"]');
-    const passwordInputs = document.querySelectorAll('input[type="password"]');
-    
-    emailInputs.forEach(input => {
-        input.addEventListener('blur', validateEmail);
-    });
-    
-    passwordInputs.forEach(input => {
-        input.addEventListener('blur', validatePassword);
-    });
-}
-
-// Validar email
-function validateEmail(event) {
-    const email = event.target.value;
-    const errorElement = event.target.parentElement.querySelector('.error-message');
-    
-    if (!email) {
-        showError(errorElement, 'El email es requerido');
-        return false;
-    }
-    
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-        showError(errorElement, 'Por favor ingresa un email válido');
-        return false;
-    }
-    
-    hideError(errorElement);
-    return true;
-}
-
-// Validar contraseña
-function validatePassword(event) {
-    const password = event.target.value;
-    const errorElement = event.target.parentElement.querySelector('.error-message');
-    
-    if (!password) {
-        showError(errorElement, 'La contraseña es requerida');
-        return false;
-    }
-    
-    if (password.length < 6) {
-        showError(errorElement, 'La contraseña debe tener al menos 6 caracteres');
-        return false;
-    }
-    
-    hideError(errorElement);
-    return true;
-}
-
-// Manejar login
-async function handleLogin(event) {
-    event.preventDefault();
-    console.log('Procesando login...');
-    
-    const form = event.target;
-    const formData = new FormData(form);
-    const email = formData.get('email');
-    const password = formData.get('password');
-    const rememberMe = formData.get('rememberMe') === 'on';
-    
-    // Validar campos
-    if (!validateLoginForm(email, password)) {
-        return;
-    }
-    
-    // Mostrar loading
-    const submitBtn = form.querySelector('button[type="submit"]');
-    showLoading(submitBtn);
-    
-    try {
-        // Simular petición al backend (reemplazar con fetch real)
-        const response = await simulateLoginRequest(email, password, rememberMe);
+class AuthSystem {
+    constructor() {
+        this.state = {
+            isAuthenticated: false,
+            currentUser: null,
+            token: null
+        };
         
-        if (response.success) {
-            // Login exitoso
-            handleLoginSuccess(response.user);
-        } else {
-            // Error en login
-            handleLoginError(response.message);
+        this.elements = {
+            loginForm: null,
+            registerForm: null,
+            loginPopup: null,
+            registerPopup: null
+        };
+        
+        this.init();
+    }
+
+    init() {
+        console.log('🚀 Inicializando sistema de autenticación StepUp Shoes...');
+        
+        this.getDOMElements();
+        this.checkAuthStatus();
+        this.setupEventListeners();
+        this.setupRealTimeValidation();
+        
+        console.log('✅ Sistema de autenticación inicializado');
+    }
+
+    getDOMElements() {
+        this.elements.loginForm = document.getElementById('loginForm');
+        this.elements.registerForm = document.getElementById('registerForm');
+        this.elements.loginPopup = document.getElementById('popup-login');
+        this.elements.registerPopup = document.getElementById('popup-registro');
+    }
+
+    setupEventListeners() {
+        // Formularios
+        if (this.elements.loginForm) {
+            this.elements.loginForm.addEventListener('submit', (e) => this.handleLogin(e));
         }
-    } catch (error) {
-        console.error('Error en login:', error);
-        handleLoginError('Error de conexión. Intenta nuevamente.');
-    } finally {
-        hideLoading(submitBtn);
-    }
-}
-
-// Validar formulario de login
-function validateLoginForm(email, password) {
-    let isValid = true;
-    
-    if (!email) {
-        showFormError('login', 'email', 'El email es requerido');
-        isValid = false;
-    }
-    
-    if (!password) {
-        showFormError('login', 'password', 'La contraseña es requerida');
-        isValid = false;
-    }
-    
-    return isValid;
-}
-
-// Manejar registro
-async function handleRegister(event) {
-    event.preventDefault();
-    console.log('Procesando registro...');
-    
-    const form = event.target;
-    const formData = new FormData(form);
-    const nombre = formData.get('nombre');
-    const email = formData.get('email');
-    const password = formData.get('password');
-    const confirmPassword = formData.get('confirmPassword');
-    const terms = formData.get('terms') === 'on';
-    
-    // Validar campos
-    if (!validateRegisterForm(nombre, email, password, confirmPassword, terms)) {
-        return;
-    }
-    
-    // Mostrar loading
-    const submitBtn = form.querySelector('button[type="submit"]');
-    showLoading(submitBtn);
-    
-    try {
-        // Simular petición al backend (reemplazar con fetch real)
-        const response = await simulateRegisterRequest(nombre, email, password);
         
-        if (response.success) {
-            // Registro exitoso
-            handleRegisterSuccess(response.user);
-        } else {
-            // Error en registro
-            handleRegisterError(response.message);
+        if (this.elements.registerForm) {
+            this.elements.registerForm.addEventListener('submit', (e) => this.handleRegister(e));
         }
-    } catch (error) {
-        console.error('Error en registro:', error);
-        handleRegisterError('Error de conexión. Intenta nuevamente.');
-    } finally {
-        hideLoading(submitBtn);
-    }
-}
 
-// Validar formulario de registro
-function validateRegisterForm(nombre, email, password, confirmPassword, terms) {
-    let isValid = true;
-    
-    if (!nombre || nombre.trim().length < 2) {
-        showFormError('register', 'nombre', 'El nombre debe tener al menos 2 caracteres');
-        isValid = false;
-    }
-    
-    if (!email) {
-        showFormError('register', 'email', 'El email es requerido');
-        isValid = false;
-    }
-    
-    if (!password) {
-        showFormError('register', 'password', 'La contraseña es requerida');
-        isValid = false;
-    } else if (password.length < 6) {
-        showFormError('register', 'password', 'La contraseña debe tener al menos 6 caracteres');
-        isValid = false;
-    }
-    
-    if (password !== confirmPassword) {
-        showFormError('register', 'confirmPassword', 'Las contraseñas no coinciden');
-        isValid = false;
-    }
-    
-    if (!terms) {
-        showFormError('register', 'terms', 'Debes aceptar los términos y condiciones');
-        isValid = false;
-    }
-    
-    return isValid;
-}
+        // Cierre de popups
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('popup-close') || 
+                e.target.classList.contains('auth-close')) {
+                this.closeAllPopups();
+            }
+        });
 
-// Manejar éxito de login
-function handleLoginSuccess(user) {
-    console.log('Login exitoso:', user);
-    
-    // Actualizar estado
-    authState.isAuthenticated = true;
-    authState.currentUser = user;
-    
-    // Guardar en localStorage
-    localStorage.setItem('currentUser', JSON.stringify(user));
-    localStorage.setItem('authToken', user.token); // En un caso real
-    
-    // Mostrar mensaje de éxito
-    showAuthMessage('login', `¡Bienvenido ${user.nombre}!`, 'success');
-    
-    // Actualizar UI
-    updateUIAuthState();
-    
-    // Cerrar popup después de un tiempo
-    setTimeout(() => {
-        cerrarPopUp('popup-login');
-        resetForm('loginForm');
-    }, 1500);
-}
-
-// Manejar error de login
-function handleLoginError(message) {
-    console.error('Error en login:', message);
-    showAuthMessage('login', message, 'error');
-}
-
-// Manejar éxito de registro
-function handleRegisterSuccess(user) {
-    console.log('Registro exitoso:', user);
-    
-    // Mostrar mensaje de éxito
-    showAuthMessage('register', '¡Registro exitoso! Redirigiendo...', 'success');
-    
-    // Cerrar popup y abrir login después de un tiempo
-    setTimeout(() => {
-        cerrarPopUp('popup-registro');
-        resetForm('registerForm');
-        mostrarLogin();
-        showAuthMessage('login', '¡Cuenta creada! Ahora puedes iniciar sesión.', 'success');
-    }, 2000);
-}
-
-// Manejar error de registro
-function handleRegisterError(message) {
-    console.error('Error en registro:', message);
-    showAuthMessage('register', message, 'error');
-}
-
-// Mostrar mensaje de autenticación
-function showAuthMessage(formType, message, type) {
-    const form = document.getElementById(`${formType}Form`);
-    if (!form) return;
-    
-    // Remover mensajes anteriores
-    const existingMessage = form.querySelector('.auth-message');
-    if (existingMessage) {
-        existingMessage.remove();
+        // Cierre con tecla Escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                this.closeAllPopups();
+            }
+        });
     }
-    
-    // Crear nuevo mensaje
-    const messageElement = document.createElement('div');
-    messageElement.className = `auth-message ${type}`;
-    messageElement.textContent = message;
-    
-    // Insertar al inicio del formulario
-    form.insertBefore(messageElement, form.firstChild);
-    
-    // Auto-remover después de 5 segundos
-    setTimeout(() => {
-        if (messageElement.parentElement) {
-            messageElement.remove();
+
+    setupRealTimeValidation() {
+        // Validación de email en tiempo real
+        const emailInputs = document.querySelectorAll('input[type="email"]');
+        emailInputs.forEach(input => {
+            input.addEventListener('blur', (e) => this.validateEmail(e.target));
+            input.addEventListener('input', (e) => this.clearFieldError(e.target));
+        });
+
+        // Validación de contraseña en tiempo real
+        const passwordInputs = document.querySelectorAll('input[type="password"]');
+        passwordInputs.forEach(input => {
+            input.addEventListener('blur', (e) => this.validatePassword(e.target));
+            input.addEventListener('input', (e) => {
+                this.clearFieldError(e.target);
+                this.updatePasswordStrength(e.target.value);
+            });
+        });
+
+        // Toggle visibilidad de contraseña
+        this.setupPasswordToggle();
+    }
+
+    setupPasswordToggle() {
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('toggle-password') || 
+                e.target.closest('.toggle-password')) {
+                const button = e.target.classList.contains('toggle-password') ? 
+                    e.target : e.target.closest('.toggle-password');
+                const input = button.previousElementSibling;
+                
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    button.textContent = '👁️';
+                } else {
+                    input.type = 'password';
+                    button.textContent = '👁️‍🗨️';
+                }
+            }
+        });
+    }
+
+    async handleLogin(event) {
+        event.preventDefault();
+        console.log('🔐 Procesando inicio de sesión...');
+
+        const form = event.target;
+        const formData = new FormData(form);
+        const email = formData.get('email').trim();
+        const password = formData.get('password');
+        const rememberMe = formData.get('rememberMe') === 'on';
+
+        // Validación
+        if (!this.validateLoginForm(email, password)) {
+            return;
         }
-    }, 5000);
-}
 
-// Mostrar error en campo específico
-function showFormError(formType, fieldName, message) {
-    const form = document.getElementById(`${formType}Form`);
-    const field = form.querySelector(`[name="${fieldName}"]`);
-    
-    if (!field) return;
-    
-    field.classList.add('error');
-    
-    let errorElement = field.parentElement.querySelector('.error-message');
-    if (!errorElement) {
-        errorElement = document.createElement('div');
-        errorElement.className = 'error-message';
-        field.parentElement.appendChild(errorElement);
-    }
-    
-    errorElement.textContent = message;
-    errorElement.classList.add('show');
-}
+        const submitBtn = form.querySelector('button[type="submit"]');
+        this.showLoading(submitBtn, 'Iniciando sesión...');
 
-// Mostrar error genérico
-function showError(element, message) {
-    if (element) {
-        element.textContent = message;
-        element.classList.add('show');
-    }
-}
-
-// Ocultar error
-function hideError(element) {
-    if (element) {
-        element.classList.remove('show');
-    }
-}
-
-// Mostrar loading en botón
-function showLoading(button) {
-    button.disabled = true;
-    button.classList.add('loading');
-    button.setAttribute('data-original-text', button.textContent);
-    button.textContent = 'Procesando...';
-}
-
-// Ocultar loading
-function hideLoading(button) {
-    button.disabled = false;
-    button.classList.remove('loading');
-    button.textContent = button.getAttribute('data-original-text') || 'Enviar';
-}
-
-// Resetear formulario
-function resetForm(formId) {
-    const form = document.getElementById(formId);
-    if (form) {
-        form.reset();
-        
-        // Limpiar errores
-        const errors = form.querySelectorAll('.error-message');
-        errors.forEach(error => error.classList.remove('show'));
-        
-        const errorInputs = form.querySelectorAll('.error');
-        errorInputs.forEach(input => input.classList.remove('error'));
-        
-        // Limpiar mensajes
-        const messages = form.querySelectorAll('.auth-message');
-        messages.forEach(message => message.remove());
-    }
-}
-
-// Verificar estado de autenticación
-function checkAuthStatus() {
-    const savedUser = localStorage.getItem('currentUser');
-    const authToken = localStorage.getItem('authToken');
-    
-    if (savedUser && authToken) {
         try {
-            authState.currentUser = JSON.parse(savedUser);
-            authState.isAuthenticated = true;
-            updateUIAuthState();
+            const response = await this.makeLoginRequest(email, password, rememberMe);
+            
+            if (response.success) {
+                await this.handleLoginSuccess(response.user, response.token);
+            } else {
+                this.handleLoginError(response.message);
+            }
         } catch (error) {
-            console.error('Error parsing saved user:', error);
-            logout();
+            console.error('❌ Error en login:', error);
+            this.handleLoginError('Error de conexión. Por favor, intenta nuevamente.');
+        } finally {
+            this.hideLoading(submitBtn);
         }
     }
-}
 
-// Actualizar UI según estado de autenticación
-function updateUIAuthState() {
-    const userActions = document.querySelector('.user-actions');
-    
-    if (!userActions) return;
-    
-    if (authState.isAuthenticated && authState.currentUser) {
-        userActions.innerHTML = `
-            <div class="user-menu">
-                <span>Hola, ${authState.currentUser.nombre}</span>
-                <div class="user-dropdown">
-                    <a href="/cuenta">Mi Cuenta</a>
-                    <a href="/pedidos">Mis Pedidos</a>
-                    <a href="#" onclick="logout()">Cerrar Sesión</a>
-                </div>
-            </div>
-            <a href="#" onclick="mostrarCarrito()" class="btn btn-primary">Carrito (<span id="carrito-count">0</span>)</a>
+    async handleRegister(event) {
+        event.preventDefault();
+        console.log('📝 Procesando registro...');
+
+        const form = event.target;
+        const formData = new FormData(form);
+        const nombre = formData.get('nombre').trim();
+        const email = formData.get('email').trim();
+        const password = formData.get('password');
+        const confirmPassword = formData.get('confirmPassword');
+        const terms = formData.get('terms') === 'on';
+
+        // Validación
+        if (!this.validateRegisterForm(nombre, email, password, confirmPassword, terms)) {
+            return;
+        }
+
+        const submitBtn = form.querySelector('button[type="submit"]');
+        this.showLoading(submitBtn, 'Creando cuenta...');
+
+        try {
+            const response = await this.makeRegisterRequest(nombre, email, password);
+            
+            if (response.success) {
+                await this.handleRegisterSuccess(response.user, response.token);
+            } else {
+                this.handleRegisterError(response.message);
+            }
+        } catch (error) {
+            console.error('❌ Error en registro:', error);
+            this.handleRegisterError('Error de conexión. Por favor, intenta nuevamente.');
+        } finally {
+            this.hideLoading(submitBtn);
+        }
+    }
+
+    validateLoginForm(email, password) {
+        let isValid = true;
+
+        if (!this.validateEmailField(email)) {
+            isValid = false;
+        }
+
+        if (!this.validatePasswordField(password)) {
+            isValid = false;
+        }
+
+        return isValid;
+    }
+
+    validateRegisterForm(nombre, email, password, confirmPassword, terms) {
+        let isValid = true;
+
+        if (!nombre || nombre.trim().length < 2) {
+            this.showFieldError('register', 'nombre', 'El nombre debe tener al menos 2 caracteres');
+            isValid = false;
+        }
+
+        if (!this.validateEmailField(email)) {
+            isValid = false;
+        }
+
+        if (!this.validatePasswordField(password)) {
+            isValid = false;
+        }
+
+        if (password !== confirmPassword) {
+            this.showFieldError('register', 'confirmPassword', 'Las contraseñas no coinciden');
+            isValid = false;
+        }
+
+        if (!terms) {
+            this.showFieldError('register', 'terms', 'Debes aceptar los términos y condiciones');
+            isValid = false;
+        }
+
+        return isValid;
+    }
+
+    validateEmailField(email) {
+        if (!email) {
+            return false;
+        }
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    validatePasswordField(password) {
+        if (!password) {
+            return false;
+        }
+
+        if (password.length < 6) {
+            return false;
+        }
+
+        return true;
+    }
+
+    validateEmail(input) {
+        const isValid = this.validateEmailField(input.value);
+        if (!isValid) {
+            this.showFieldErrorByInput(input, 'Por favor ingresa un email válido');
+        } else {
+            this.clearFieldError(input);
+        }
+        return isValid;
+    }
+
+    validatePassword(input) {
+        const isValid = this.validatePasswordField(input.value);
+        if (!isValid) {
+            this.showFieldErrorByInput(input, 'La contraseña debe tener al menos 6 caracteres');
+        } else {
+            this.clearFieldError(input);
+        }
+        return isValid;
+    }
+
+    updatePasswordStrength(password) {
+        const strengthMeter = document.querySelector('.password-strength-meter');
+        const strengthText = document.querySelector('.password-strength-text');
+        
+        if (!strengthMeter || !strengthText) return;
+
+        let strength = 0;
+        let text = '';
+        let className = '';
+
+        if (password.length >= 8) strength++;
+        if (/[A-Z]/.test(password)) strength++;
+        if (/[0-9]/.test(password)) strength++;
+        if (/[^A-Za-z0-9]/.test(password)) strength++;
+
+        switch (strength) {
+            case 0:
+            case 1:
+                text = 'Débil';
+                className = 'strength-weak';
+                break;
+            case 2:
+                text = 'Regular';
+                className = 'strength-fair';
+                break;
+            case 3:
+                text = 'Buena';
+                className = 'strength-good';
+                break;
+            case 4:
+                text = 'Fuerte';
+                className = 'strength-strong';
+                break;
+        }
+
+        strengthMeter.className = `password-strength-meter ${className}`;
+        strengthText.className = `password-strength-text strength-text-${className.split('-')[1]}`;
+        strengthText.textContent = text;
+    }
+
+    async handleLoginSuccess(user, token) {
+        console.log('✅ Login exitoso:', user);
+        
+        // Actualizar estado
+        this.state.isAuthenticated = true;
+        this.state.currentUser = user;
+        this.state.token = token;
+
+        // Guardar en almacenamiento
+        this.saveAuthData(user, token);
+
+        // Mostrar mensaje de éxito
+        this.showAuthMessage('login', `¡Bienvenido ${user.nombre}!`, 'success');
+
+        // Actualizar UI
+        this.updateUIAuthState();
+
+        // Cerrar popup y resetear formulario
+        setTimeout(() => {
+            this.closePopup('popup-login');
+            this.resetForm('loginForm');
+        }, 1500);
+    }
+
+    handleLoginError(message) {
+        console.error('❌ Error en login:', message);
+        this.showAuthMessage('login', message, 'error');
+    }
+
+    async handleRegisterSuccess(user, token) {
+        console.log('✅ Registro exitoso:', user);
+        
+        // Mostrar mensaje de éxito
+        this.showAuthMessage('register', '¡Cuenta creada exitosamente!', 'success');
+
+        // Cerrar popup y redirigir al login
+        setTimeout(() => {
+            this.closePopup('popup-registro');
+            this.resetForm('registerForm');
+            this.showLogin();
+            this.showAuthMessage('login', '¡Cuenta creada! Ahora puedes iniciar sesión.', 'success');
+        }, 2000);
+    }
+
+    handleRegisterError(message) {
+        console.error('❌ Error en registro:', message);
+        this.showAuthMessage('register', message, 'error');
+    }
+
+    showAuthMessage(formType, message, type) {
+        const form = document.getElementById(`${formType}Form`);
+        if (!form) return;
+
+        // Remover mensajes existentes
+        const existingMessages = form.querySelectorAll('.auth-message');
+        existingMessages.forEach(msg => msg.remove());
+
+        // Crear nuevo mensaje
+        const messageElement = document.createElement('div');
+        messageElement.className = `auth-message ${type}`;
+        messageElement.innerHTML = `
+            <div class="message-icon">${this.getMessageIcon(type)}</div>
+            <div class="message-text">${message}</div>
         `;
-    } else {
-        userActions.innerHTML = `
-            <a href="#" onclick="mostrarLogin()" class="btn btn-outline">Iniciar Sesión</a>
-            <a href="#" onclick="mostrarCarrito()" class="btn btn-primary">Carrito (<span id="carrito-count">0</span>)</a>
+
+        // Insertar mensaje
+        form.insertBefore(messageElement, form.firstChild);
+
+        // Auto-remover
+        setTimeout(() => {
+            if (messageElement.parentElement) {
+                messageElement.remove();
+            }
+        }, 5000);
+    }
+
+    getMessageIcon(type) {
+        const icons = {
+            success: '✅',
+            error: '❌',
+            warning: '⚠️',
+            info: 'ℹ️'
+        };
+        return icons[type] || 'ℹ️';
+    }
+
+    showFieldError(formType, fieldName, message) {
+        const form = document.getElementById(`${formType}Form`);
+        const field = form.querySelector(`[name="${fieldName}"]`);
+        
+        if (field) {
+            this.showFieldErrorByInput(field, message);
+        }
+    }
+
+    showFieldErrorByInput(input, message) {
+        input.classList.add('error');
+        
+        let errorElement = input.parentElement.querySelector('.error-message');
+        if (!errorElement) {
+            errorElement = document.createElement('div');
+            errorElement.className = 'error-message';
+            input.parentElement.appendChild(errorElement);
+        }
+        
+        errorElement.textContent = message;
+        errorElement.classList.add('show');
+    }
+
+    clearFieldError(input) {
+        input.classList.remove('error');
+        const errorElement = input.parentElement.querySelector('.error-message');
+        if (errorElement) {
+            errorElement.classList.remove('show');
+        }
+    }
+
+    showLoading(button, text = 'Procesando...') {
+        button.disabled = true;
+        button.classList.add('loading');
+        button.setAttribute('data-original-text', button.innerHTML);
+        button.innerHTML = `
+            <span class="loading-spinner"></span>
+            ${text}
         `;
     }
-    
-    // Actualizar contador del carrito
-    actualizarContadorCarrito();
-}
 
-// Cerrar sesión
-function logout() {
-    console.log('Cerrando sesión...');
-    
-    // Limpiar estado
-    authState.isAuthenticated = false;
-    authState.currentUser = null;
-    
-    // Limpiar localStorage
-    localStorage.removeItem('currentUser');
-    localStorage.removeItem('authToken');
-    
-    // Actualizar UI
-    updateUIAuthState();
-    
-    // Mostrar mensaje
-    alert('Sesión cerrada correctamente');
-}
+    hideLoading(button) {
+        button.disabled = false;
+        button.classList.remove('loading');
+        button.innerHTML = button.getAttribute('data-original-text') || 'Enviar';
+    }
 
-// Simular petición de login (REEMPLAZAR CON FETCH REAL)
-async function simulateLoginRequest(email, password, rememberMe) {
-    return new Promise((resolve) => {
+    resetForm(formId) {
+        const form = document.getElementById(formId);
+        if (form) {
+            form.reset();
+            
+            // Limpiar errores
+            const errors = form.querySelectorAll('.error-message');
+            errors.forEach(error => error.classList.remove('show'));
+            
+            const errorInputs = form.querySelectorAll('.error');
+            errorInputs.forEach(input => input.classList.remove('error'));
+            
+            // Limpiar mensajes
+            const messages = form.querySelectorAll('.auth-message');
+            messages.forEach(message => message.remove());
+            
+            // Resetear indicador de fortaleza de contraseña
+            const strengthMeter = form.querySelector('.password-strength-meter');
+            const strengthText = form.querySelector('.password-strength-text');
+            if (strengthMeter && strengthText) {
+                strengthMeter.className = 'password-strength-meter';
+                strengthText.textContent = '';
+            }
+        }
+    }
+
+    checkAuthStatus() {
+        const savedUser = localStorage.getItem('stepup_currentUser');
+        const savedToken = localStorage.getItem('stepup_authToken');
+        
+        if (savedUser && savedToken) {
+            try {
+                this.state.currentUser = JSON.parse(savedUser);
+                this.state.token = savedToken;
+                this.state.isAuthenticated = true;
+                this.updateUIAuthState();
+                console.log('✅ Sesión recuperada:', this.state.currentUser.nombre);
+            } catch (error) {
+                console.error('❌ Error recuperando sesión:', error);
+                this.logout();
+            }
+        }
+    }
+
+    saveAuthData(user, token) {
+        try {
+            localStorage.setItem('stepup_currentUser', JSON.stringify(user));
+            localStorage.setItem('stepup_authToken', token);
+            localStorage.setItem('stepup_lastLogin', new Date().toISOString());
+        } catch (error) {
+            console.error('❌ Error guardando datos de autenticación:', error);
+        }
+    }
+
+    updateUIAuthState() {
+        // Actualizar navegación principal
+        this.updateMainNavigation();
+        
+        // Actualizar menú móvil
+        this.updateMobileMenu();
+        
+        // Actualizar elementos específicos de la página
+        this.updatePageSpecificElements();
+    }
+
+    updateMainNavigation() {
+        const userActions = document.querySelector('.user-actions');
+        if (!userActions) return;
+
+        if (this.state.isAuthenticated && this.state.currentUser) {
+            userActions.innerHTML = `
+                <div class="user-menu">
+                    <div class="user-greeting">
+                        <span class="user-avatar">👤</span>
+                        <span class="user-name">Hola, ${this.state.currentUser.nombre.split(' ')[0]}</span>
+                    </div>
+                    <div class="user-dropdown">
+                        <a href="/cuenta" class="dropdown-item">
+                            <span class="dropdown-icon">📊</span>
+                            Mi Cuenta
+                        </a>
+                        <a href="/pedidos" class="dropdown-item">
+                            <span class="dropdown-icon">📦</span>
+                            Mis Pedidos
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a href="#" class="dropdown-item dropdown-item-logout" onclick="authSystem.logout()">
+                            <span class="dropdown-icon">🚪</span>
+                            Cerrar Sesión
+                        </a>
+                    </div>
+                </div>
+                <a href="#" onclick="mostrarCarrito()" class="btn btn-primary btn-cart">
+                    <span class="cart-icon">🛒</span>
+                    Carrito (<span id="carrito-count">0</span>)
+                </a>
+            `;
+        } else {
+            userActions.innerHTML = `
+                <a href="#" onclick="authSystem.showLogin()" class="btn btn-outline btn-login">
+                    <span class="btn-icon">🔐</span>
+                    Iniciar Sesión
+                </a>
+                <a href="#" onclick="mostrarCarrito()" class="btn btn-primary btn-cart">
+                    <span class="cart-icon">🛒</span>
+                    Carrito (<span id="carrito-count">0</span>)
+                </a>
+            `;
+        }
+    }
+
+    updateMobileMenu() {
+        const authLinks = document.getElementById('mobileAuthLinks');
+        const userMenu = document.getElementById('mobileUserMenu');
+        
+        if (authLinks && userMenu) {
+            if (this.state.isAuthenticated) {
+                authLinks.style.display = 'none';
+                userMenu.style.display = 'flex';
+                
+                // Actualizar nombre de usuario en menú móvil
+                const userNameElements = userMenu.querySelectorAll('.user-name');
+                userNameElements.forEach(element => {
+                    element.textContent = this.state.currentUser.nombre.split(' ')[0];
+                });
+            } else {
+                authLinks.style.display = 'flex';
+                userMenu.style.display = 'none';
+            }
+        }
+    }
+
+    updatePageSpecificElements() {
+        // Actualizar elementos específicos según la página
+        const protectedElements = document.querySelectorAll('[data-auth-required]');
+        protectedElements.forEach(element => {
+            if (this.state.isAuthenticated) {
+                element.style.display = element.dataset.authDisplay || 'block';
+            } else {
+                element.style.display = 'none';
+            }
+        });
+    }
+
+    logout() {
+        console.log('🚪 Cerrando sesión...');
+        
+        // Limpiar estado
+        this.state.isAuthenticated = false;
+        this.state.currentUser = null;
+        this.state.token = null;
+        
+        // Limpiar almacenamiento
+        localStorage.removeItem('stepup_currentUser');
+        localStorage.removeItem('stepup_authToken');
+        localStorage.removeItem('stepup_lastLogin');
+        
+        // Actualizar UI
+        this.updateUIAuthState();
+        
+        // Mostrar mensaje
+        this.showToast('Sesión cerrada correctamente', 'success');
+        
+        // Redirigir si es necesario
+        if (window.location.pathname.includes('/cuenta') || 
+            window.location.pathname.includes('/pedidos')) {
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 1000);
+        }
+    }
+
+    showLogin() {
+        this.showPopup('popup-login');
+        this.resetForm('loginForm');
+    }
+
+    showRegister() {
+        this.showPopup('popup-registro');
+        this.resetForm('registerForm');
+    }
+
+    showPopup(popupId) {
+        const popup = document.getElementById(popupId);
+        if (popup) {
+            popup.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    closePopup(popupId) {
+        const popup = document.getElementById(popupId);
+        if (popup) {
+            popup.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+    }
+
+    closeAllPopups() {
+        this.closePopup('popup-login');
+        this.closePopup('popup-registro');
+    }
+
+    showToast(message, type = 'info') {
+        // Implementación de toast notifications
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        toast.innerHTML = `
+            <div class="toast-icon">${this.getMessageIcon(type)}</div>
+            <div class="toast-message">${message}</div>
+            <button class="toast-close" onclick="this.parentElement.remove()">×</button>
+        `;
+        
+        document.body.appendChild(toast);
+        
         setTimeout(() => {
-            // Simular validación
-            if (email === 'usuario@ejemplo.com' && password === 'password123') {
+            if (toast.parentElement) {
+                toast.remove();
+            }
+        }, 5000);
+    }
+
+    // Métodos de API (simulados - reemplazar con implementación real)
+    async makeLoginRequest(email, password, rememberMe) {
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                // Simulación de validación
+                const testUsers = {
+                    'usuario@stepup.com': { password: 'password123', user: { id: 1, nombre: 'Usuario StepUp', email: email } },
+                    'admin@stepup.com': { password: 'admin123', user: { id: 2, nombre: 'Administrador', email: email, role: 'admin' } }
+                };
+                
+                const userData = testUsers[email];
+                
+                if (userData && userData.password === password) {
+                    resolve({
+                        success: true,
+                        user: userData.user,
+                        token: 'stepup_token_' + Date.now()
+                    });
+                } else {
+                    resolve({
+                        success: false,
+                        message: 'Email o contraseña incorrectos'
+                    });
+                }
+            }, 1500);
+        });
+    }
+
+    async makeRegisterRequest(nombre, email, password) {
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                // Simulación de registro
                 resolve({
                     success: true,
                     user: {
-                        id: 1,
-                        nombre: 'Usuario Ejemplo',
+                        id: Date.now(),
+                        nombre: nombre,
                         email: email,
-                        token: 'simulated-token-123'
-                    }
+                        role: 'user',
+                        fechaRegistro: new Date().toISOString()
+                    },
+                    token: 'stepup_token_' + Date.now()
                 });
-            } else {
-                resolve({
-                    success: false,
-                    message: 'Email o contraseña incorrectos'
-                });
-            }
-        }, 1500);
-    });
+            }, 1500);
+        });
+    }
+
+    // Getters para estado de autenticación
+    isAuthenticated() {
+        return this.state.isAuthenticated;
+    }
+
+    getCurrentUser() {
+        return this.state.currentUser;
+    }
+
+    getToken() {
+        return this.state.token;
+    }
 }
 
-// Simular petición de registro (REEMPLAZAR CON FETCH REAL)
-async function simulateRegisterRequest(nombre, email, password) {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            // Simular registro exitoso
-            resolve({
-                success: true,
-                user: {
-                    id: Date.now(),
-                    nombre: nombre,
-                    email: email,
-                    token: 'simulated-token-' + Date.now()
-                }
-            });
-        }, 1500);
-    });
+// Instancia global del sistema de autenticación
+const authSystem = new AuthSystem();
+
+// Funciones globales para compatibilidad
+function mostrarLogin() {
+    authSystem.showLogin();
 }
 
-// Inicializar cuando se carga el DOM
-document.addEventListener('DOMContentLoaded', function() {
-    initAuth();
-});
+function mostrarRegistro() {
+    authSystem.showRegister();
+}
 
+function logout() {
+    authSystem.logout();
+}
+
+function cambiarFormulario(tipo) {
+    if (tipo === 'login') {
+        authSystem.closePopup('popup-registro');
+        authSystem.showLogin();
+    } else {
+        authSystem.closePopup('popup-login');
+        authSystem.showRegister();
+    }
+}
+
+// Exportar para uso en otros módulos
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = authSystem;
+}

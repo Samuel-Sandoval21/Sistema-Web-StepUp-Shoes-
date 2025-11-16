@@ -25,18 +25,27 @@ public class Usuario {
     @Column(nullable = false)
     private String password;
     
+    private String telefono;
+    
+    private LocalDateTime fechaNacimiento;
+    
     @Column(name = "fecha_registro")
     private LocalDateTime fechaRegistro = LocalDateTime.now();
     
     @Column(name = "ultima_sesion")
     private LocalDateTime ultimaSesion;
     
+    // ✅ AGREGAR ESTE CAMPO
     private Boolean activo = true;
     
     @Enumerated(EnumType.STRING)
     private Rol rol = Rol.CLIENTE;
     
+    private String codigoVerificacion;
+    
+    private Boolean verificado = false;
+    
     public enum Rol {
-        CLIENTE, ADMINISTRADOR
+        CLIENTE, ADMINISTRADOR, EMPLEADO
     }
 }

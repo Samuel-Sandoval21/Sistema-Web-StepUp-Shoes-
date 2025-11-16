@@ -3,7 +3,7 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to c
 Click nbfs://nbhost/SystemFileSystem/Templates/Other/CascadeStyleSheet.css to edit this template
 */
 /* 
-    Created on : 5 nov 2025, 7:05:55 p. m.
+    Created on : 5 nov 2025, 7:05:55 p. m.
     Author     : Adbeel
 */
 /* Estilos específicos para el proceso de checkout */
@@ -22,6 +22,12 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/CascadeStyleSheet.css to ed
 .checkout-header h1 {
     color: var(--secondary-color);
     margin-bottom: 0.5rem;
+    font-size: 2.5rem;
+}
+
+.checkout-header p {
+    color: #666;
+    font-size: 1.1rem;
 }
 
 .checkout-progress {
@@ -41,6 +47,7 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/CascadeStyleSheet.css to ed
     flex-direction: column;
     align-items: center;
     gap: 0.5rem;
+    cursor: pointer;
 }
 
 .step-number {
@@ -61,6 +68,7 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/CascadeStyleSheet.css to ed
     background: var(--primary-color);
     color: var(--white);
     border-color: var(--primary-color);
+    transform: scale(1.1);
 }
 
 .progress-step.completed .step-number {
@@ -73,10 +81,12 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/CascadeStyleSheet.css to ed
     font-size: 0.9rem;
     font-weight: 500;
     color: #666;
+    transition: color 0.3s ease;
 }
 
 .progress-step.active .step-label {
     color: var(--primary-color);
+    font-weight: 600;
 }
 
 .progress-step.completed .step-label {
@@ -87,6 +97,7 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/CascadeStyleSheet.css to ed
     width: 60px;
     height: 2px;
     background: var(--light-gray);
+    transition: background 0.3s ease;
 }
 
 .progress-step.completed + .step-connector {
@@ -108,6 +119,7 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/CascadeStyleSheet.css to ed
     padding: 2rem;
     box-shadow: var(--shadow);
     margin-bottom: 2rem;
+    border: 1px solid #e9ecef;
 }
 
 .section-header {
@@ -121,6 +133,13 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/CascadeStyleSheet.css to ed
 
 .section-icon {
     font-size: 1.5rem;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--light-gray);
+    border-radius: 50%;
 }
 
 .section-title {
@@ -159,6 +178,7 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/CascadeStyleSheet.css to ed
     border-radius: var(--border-radius);
     font-size: 1rem;
     transition: all 0.3s ease;
+    font-family: inherit;
 }
 
 .checkout-form-group input:focus,
@@ -185,6 +205,13 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/CascadeStyleSheet.css to ed
 
 .form-error.show {
     display: block;
+    animation: shake 0.5s ease;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
 }
 
 /* Métodos de envío */
@@ -198,20 +225,23 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/CascadeStyleSheet.css to ed
     display: flex;
     align-items: center;
     gap: 1rem;
-    padding: 1rem;
+    padding: 1.5rem;
     border: 2px solid #ddd;
     border-radius: var(--border-radius);
     cursor: pointer;
     transition: all 0.3s ease;
+    position: relative;
 }
 
 .shipping-method:hover {
     border-color: var(--accent-color);
+    transform: translateY(-2px);
 }
 
 .shipping-method.selected {
     border-color: var(--primary-color);
     background: #fff9f8;
+    box-shadow: 0 4px 12px rgba(228, 77, 38, 0.1);
 }
 
 .shipping-method input[type="radio"] {
@@ -226,6 +256,7 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/CascadeStyleSheet.css to ed
     font-weight: 600;
     color: var(--secondary-color);
     margin-bottom: 0.25rem;
+    font-size: 1.1rem;
 }
 
 .shipping-description {
@@ -234,9 +265,16 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/CascadeStyleSheet.css to ed
     margin-bottom: 0.25rem;
 }
 
+.shipping-details {
+    font-size: 0.8rem;
+    color: #999;
+    font-style: italic;
+}
+
 .shipping-price {
     font-weight: 600;
     color: var(--primary-color);
+    font-size: 1.1rem;
 }
 
 .shipping-free {
@@ -255,26 +293,38 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/CascadeStyleSheet.css to ed
     display: flex;
     align-items: center;
     gap: 1rem;
-    padding: 1rem;
+    padding: 1.5rem;
     border: 2px solid #ddd;
     border-radius: var(--border-radius);
     cursor: pointer;
     transition: all 0.3s ease;
+    position: relative;
 }
 
 .payment-method:hover {
     border-color: var(--accent-color);
+    transform: translateY(-2px);
 }
 
 .payment-method.selected {
     border-color: var(--primary-color);
     background: #fff9f8;
+    box-shadow: 0 4px 12px rgba(228, 77, 38, 0.1);
+}
+
+.payment-method input[type="radio"] {
+    margin: 0;
 }
 
 .payment-icon {
     font-size: 1.5rem;
     width: 40px;
-    text-align: center;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--light-gray);
+    border-radius: 50%;
 }
 
 .payment-info {
@@ -285,6 +335,7 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/CascadeStyleSheet.css to ed
     font-weight: 600;
     color: var(--secondary-color);
     margin-bottom: 0.25rem;
+    font-size: 1.1rem;
 }
 
 .payment-description {
@@ -299,6 +350,7 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/CascadeStyleSheet.css to ed
     border-radius: var(--border-radius);
     margin-top: 1rem;
     display: none;
+    border: 1px solid #ddd;
 }
 
 .credit-card-form.show {
@@ -325,6 +377,7 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/CascadeStyleSheet.css to ed
     margin-bottom: 1.5rem;
     position: relative;
     min-height: 160px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
 }
 
 .card-chip {
@@ -333,13 +386,26 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/CascadeStyleSheet.css to ed
     background: #ffd700;
     border-radius: 5px;
     margin-bottom: 1rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.card-chip::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, transparent 45%, rgba(255,255,255,0.3) 50%, transparent 55%);
 }
 
 .card-number {
     font-size: 1.2rem;
     letter-spacing: 2px;
     margin-bottom: 1rem;
-    font-family: monospace;
+    font-family: 'Courier New', monospace;
+    font-weight: 500;
 }
 
 .card-details {
@@ -357,6 +423,12 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/CascadeStyleSheet.css to ed
     font-size: 0.7rem;
     opacity: 0.8;
     margin-bottom: 0.25rem;
+    text-transform: uppercase;
+}
+
+.card-value {
+    font-size: 0.9rem;
+    font-weight: 500;
 }
 
 /* Resumen del pedido */
@@ -367,6 +439,7 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/CascadeStyleSheet.css to ed
     box-shadow: var(--shadow);
     position: sticky;
     top: 2rem;
+    border: 1px solid #e9ecef;
 }
 
 .summary-header {
@@ -378,12 +451,28 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/CascadeStyleSheet.css to ed
 .summary-header h3 {
     color: var(--secondary-color);
     margin: 0;
+    font-size: 1.3rem;
 }
 
 .summary-items {
     max-height: 300px;
     overflow-y: auto;
     margin-bottom: 1.5rem;
+    padding-right: 0.5rem;
+}
+
+.summary-items::-webkit-scrollbar {
+    width: 4px;
+}
+
+.summary-items::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 2px;
+}
+
+.summary-items::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 2px;
 }
 
 .summary-item {
@@ -391,6 +480,11 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/CascadeStyleSheet.css to ed
     gap: 1rem;
     padding: 1rem 0;
     border-bottom: 1px solid var(--light-gray);
+    transition: background-color 0.3s ease;
+}
+
+.summary-item:hover {
+    background-color: #f8f9fa;
 }
 
 .summary-item:last-child {
@@ -402,16 +496,21 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/CascadeStyleSheet.css to ed
     height: 60px;
     object-fit: cover;
     border-radius: var(--border-radius);
+    flex-shrink: 0;
 }
 
 .summary-item-details {
     flex: 1;
+    min-width: 0;
 }
 
 .summary-item-name {
     font-weight: 600;
     color: var(--secondary-color);
     margin-bottom: 0.25rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .summary-item-info {
@@ -420,9 +519,15 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/CascadeStyleSheet.css to ed
     margin-bottom: 0.25rem;
 }
 
+.summary-item-quantity {
+    font-size: 0.8rem;
+    color: #999;
+}
+
 .summary-item-price {
     font-weight: 600;
     color: var(--primary-color);
+    flex-shrink: 0;
 }
 
 .summary-totals {
@@ -435,6 +540,7 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/CascadeStyleSheet.css to ed
     justify-content: space-between;
     align-items: center;
     margin-bottom: 0.75rem;
+    font-size: 0.95rem;
 }
 
 .summary-total {
@@ -454,6 +560,7 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/CascadeStyleSheet.css to ed
     text-align: center;
     margin: 1rem 0;
     font-weight: 500;
+    border: 1px solid #c3e6cb;
 }
 
 /* Acciones del checkout */
@@ -464,6 +571,7 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/CascadeStyleSheet.css to ed
     margin-top: 2rem;
     padding-top: 2rem;
     border-top: 2px solid var(--light-gray);
+    gap: 1rem;
 }
 
 .btn-checkout {
@@ -478,6 +586,7 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/CascadeStyleSheet.css to ed
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
+    font-family: inherit;
 }
 
 .btn-checkout-back {
@@ -488,22 +597,26 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/CascadeStyleSheet.css to ed
 
 .btn-checkout-back:hover {
     background: #e0e0e0;
+    transform: translateY(-1px);
 }
 
 .btn-checkout-continue {
     background: var(--primary-color);
     color: var(--white);
+    box-shadow: 0 4px 12px rgba(228, 77, 38, 0.2);
 }
 
 .btn-checkout-continue:hover {
     background: #c0392b;
     transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(228, 77, 38, 0.3);
 }
 
 .btn-checkout-continue:disabled {
     background: #ccc;
     cursor: not-allowed;
     transform: none;
+    box-shadow: none;
 }
 
 .btn-checkout-continue:disabled:hover {
@@ -517,6 +630,7 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/CascadeStyleSheet.css to ed
     padding: 1.5rem;
     border-radius: var(--border-radius);
     margin-top: 2rem;
+    border-left: 4px solid #28a745;
 }
 
 .security-features {
@@ -531,11 +645,31 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/CascadeStyleSheet.css to ed
     gap: 0.75rem;
     font-size: 0.9rem;
     color: #666;
+    padding: 1rem;
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
 .security-icon {
     color: #27ae60;
     font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+/* Estados del checkout */
+.checkout-paso {
+    display: none;
+    animation: fadeIn 0.5s ease;
+}
+
+.checkout-paso.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 /* Responsive */
@@ -558,10 +692,13 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/CascadeStyleSheet.css to ed
 @media (max-width: 768px) {
     .checkout-progress {
         overflow-x: auto;
+        justify-content: flex-start;
+        padding-bottom: 1rem;
     }
     
     .progress-steps {
         min-width: 500px;
+        padding: 0 1rem;
     }
     
     .checkout-actions {
@@ -573,11 +710,19 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/CascadeStyleSheet.css to ed
         width: 100%;
         justify-content: center;
     }
+    
+    .checkout-header h1 {
+        font-size: 2rem;
+    }
 }
 
 @media (max-width: 480px) {
     .checkout-form-section {
         padding: 1.5rem;
+    }
+    
+    .checkout-container {
+        padding: 1rem;
     }
     
     .section-header {
@@ -591,14 +736,29 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/CascadeStyleSheet.css to ed
         flex-direction: column;
         text-align: center;
         gap: 0.5rem;
+        padding: 1rem;
     }
     
     .summary-item {
         flex-direction: column;
         text-align: center;
+        gap: 0.5rem;
     }
     
     .summary-item-image {
         align-self: center;
+    }
+    
+    .security-features {
+        grid-template-columns: 1fr;
+    }
+    
+    .card-preview {
+        min-height: 140px;
+        padding: 1rem;
+    }
+    
+    .card-number {
+        font-size: 1rem;
     }
 }
