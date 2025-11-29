@@ -964,3 +964,60 @@ a:focus {
         color: #e2e8f0;
     }
 }
+/* LOGIN */
+.btn-login-desktop {
+    background: #4b6cb7 !important;
+    border: none !important;
+    color: white !important;
+    font-weight: 700;
+    padding: .7rem 1.2rem;
+    border-radius: 10px;
+}
+.btn-login-desktop:hover {
+    background: #182848 !important;
+}
+
+/* CARRITO */
+.btn-carrito-desktop {
+    background: #ff2e63 !important;
+    border: none !important;
+    color: white !important;
+    font-weight: 700;
+    padding: .7rem 1.2rem;
+    border-radius: 10px;
+}
+.btn-carrito-desktop:hover {
+    background: #d81e54 !important;
+}
+
+/* ============================
+   BOTONES LOGIN Y CARRITO (NUEVOS)
+   ============================ */
+
+.btn-login-desktop,
+.btn-carrito-desktop {
+    background: linear-gradient(135deg, #6a5acd, #483d8b); /* morado elegante */
+    color: white !important;
+    padding: 10px 18px;
+    border-radius: 10px;
+    text-decoration: none !important;
+    font-weight: 600;
+    transition: 0.25s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.btn-login-desktop:hover,
+.btn-carrito-desktop:hover {
+    background: linear-gradient(135deg, #7b68ee, #6a5acd);
+    transform: translateY(-2px);
+}
+
+/* Centró lógica */
+.nav-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}

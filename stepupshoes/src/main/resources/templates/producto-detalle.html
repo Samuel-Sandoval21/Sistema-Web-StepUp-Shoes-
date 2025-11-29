@@ -1,85 +1,98 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments/header :: head}">
-    <title th:text="${producto.nombre} + ' - StepUp Shoes'">Detalle Producto - StepUp Shoes</title>
+    <title th:text="${producto.nombre} + ' - StepUp Shoes'">Detalle del Producto</title>
 </head>
 <body>
-    <div th:replace="~{fragments/header :: header}"></div>
 
-    <main class="container">
-        <div class="producto-detalle-container">
-            <!-- Galería -->
-            <div class="producto-galeria">
-                <div class="galeria-principal">
-                    <img th:src="${producto.imagenUrl}" th:alt="${producto.nombre}" id="imagenPrincipal">
-                </div>
-            </div>
+<div th:replace="~{fragments/header :: header}"></div>
 
-            <!-- Información -->
-            <div class="producto-info-detalle">
-                <div th:if="${producto.destacado}" class="producto-badge">⭐ Destacado</div>
-                <h1 th:text="${producto.nombre}">Nombre del Producto</h1>
-                
-                <div class="producto-precio-detalle">
-                    <span class="precio-actual" th:text="'$' + ${#numbers.formatDecimal(producto.precio, 1, 2)}">$99.99</span>
-                </div>
+<main class="container">
+    <div class="producto-detalle-container">
 
-                <p class="producto-descripcion-detalle" th:text="${producto.descripcion}">Descripción del producto</p>
-
-                <!-- Selector de cantidad -->
-                <div class="cantidad-selector">
-                    <label>Cantidad:</label>
-                    <div class="cantidad-controls">
-                        <button class="cantidad-btn" onclick="modificarCantidad(-1)">-</button>
-                        <span class="cantidad-value" id="cantidadValue">1</span>
-                        <button class="cantidad-btn" onclick="modificarCantidad(1)">+</button>
-                    </div>
-                    <span class="stock-info" th:text="'Stock disponible: ' + ${producto.stock} + ' unidades'">Stock: 10 unidades</span>
-                </div>
-
-                <!-- Acciones -->
-                <div class="producto-acciones-detalle">
-                    <!-- ✅ CORREGIDO: onclick con parámetros correctos -->
-                    <button class="btn btn-primary btn-agregar-carrito" 
-                            onclick="agregarAlCarritoDesdeDetalle([[${producto.id}]])">
-                        🛒 Añadir al Carrito
-                    </button>
-                    <button class="btn btn-outline btn-comprar-ahora"
-                            onclick="comprarAhora([[${producto.id}]])">
-                        ⚡ Comprar Ahora
-                    </button>
-                </div>
+        <!-- Galería -->
+        <div class="producto-galeria">
+            <div class="galeria-principal">
+                <img th:src="@{/images/{img}(img=${producto.imagenUrl})}"
+                     th:alt="${producto.nombre}"
+                     id="imagenPrincipal">
             </div>
         </div>
-    </main>
 
-    <div th:replace="~{fragments/footer :: footer}"></div>
+        <!-- Información -->
+        <div class="producto-info-detalle">
 
-    <script>
+            <div th:if="${producto.destacado}" class="producto-badge">⭐ Destacado</div>
+
+            <h1 th:text="${producto.nombre}"></h1>
+
+            <div class="producto-precio-detalle">
+                <span class="precio-actual"
+                      th:text="'$' + ${#numbers.formatDecimal(producto.precio, 1, 2)}">
+                </span>
+            </div>
+
+            <p class="producto-descripcion-detalle" th:text="${producto.descripcion}"></p>
+
+            <!-- Selector de Cantidad -->
+            <div class="cantidad-selector">
+                <label>Cantidad:</label>
+                <div class="cantidad-controls">
+                    <button class="cantidad-btn" onclick="modificarCantidad(-1)">-</button>
+                    <span class="cantidad-value" id="cantidadValue">1</span>
+                    <button class="cantidad-btn" onclick="modificarCantidad(1)">+</button>
+                </div>
+
+                <span class="stock-info"
+                      th:text="'Stock disponible: ' + ${producto.stock}">
+                </span>
+            </div>
+
+            <!-- Acciones -->
+            <div class="producto-acciones-detalle">
+                <button class="btn btn-primary btn-agregar-carrito"
+                        onclick="agregarAlCarritoDesdeDetalle([[${producto.id}]])">
+                    🛒 Añadir al Carrito
+                </button>
+
+                <button class="btn btn-outline btn-comprar-ahora"
+                        onclick="comprarAhora([[${producto.id}]])">
+                    ⚡ Comprar Ahora
+                </button>
+            </div>
+
+        </div>
+    </div>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+
+<!-- Funciones JS -->
+<script>
     let cantidadSeleccionada = 1;
+    const stockMaximo = [[${producto.stock}]];
 
     function modificarCantidad(cambio) {
         const nuevaCantidad = cantidadSeleccionada + cambio;
-        const stock = [[${producto.stock}]];
-        
-        if (nuevaCantidad >= 1 && nuevaCantidad <= stock) {
+
+        if (nuevaCantidad >= 1 && nuevaCantidad <= stockMaximo) {
             cantidadSeleccionada = nuevaCantidad;
-            document.getElementById('cantidadValue').textContent = nuevaCantidad;
+            document.getElementById("cantidadValue").innerText = nuevaCantidad;
         }
     }
 
-    function agregarAlCarritoDesdeDetalle(productoId) {
-        // Lógica simplificada para agregar al carrito
-        alert('Producto agregado al carrito: ' + productoId + ', Cantidad: ' + cantidadSeleccionada);
+    function agregarAlCarritoDesdeDetalle(idProducto) {
+        agregarAlCarrito(idProducto, null, cantidadSeleccionada);
     }
 
-    function comprarAhora(productoId) {
-        alert('Comprando ahora: ' + productoId);
+    function comprarAhora(idProducto) {
+        agregarAlCarrito(idProducto, null, cantidadSeleccionada);
+        setTimeout(() => window.location.href = "/checkout", 500);
     }
-    </script>
+</script>
 
-    <!-- CSS simplificado -->
-    <style>
+<style>
     .producto-detalle-container {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -88,7 +101,7 @@
     }
 
     .galeria-principal img {
-        max-width: 100%;
+        width: 100%;
         height: 400px;
         object-fit: contain;
     }
@@ -112,7 +125,7 @@
     .producto-acciones-detalle {
         display: flex;
         gap: 1rem;
-        margin: 2rem 0;
+        margin-top: 2rem;
     }
 
     @media (max-width: 768px) {
@@ -120,6 +133,9 @@
             grid-template-columns: 1fr;
         }
     }
-    </style>
+</style>
+
+<script src="/js/carrito.js"></script>
+
 </body>
 </html>

@@ -1,0 +1,140 @@
+/*
+Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+Click nbfs://nbhost/SystemFileSystem/Templates/Other/CascadeStyleSheet.css to edit this template
+*/
+/* 
+    Created on : 29 nov 2025, 10:36:17 a.m.
+    Author     : HP
+*/
+
+.navbar-desktop {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: white;
+    height: 90px;
+    padding: 0 3rem;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+    position: sticky;
+    top: 0;
+    z-index: 999;
+}
+
+.logo-desktop {
+    font-size: 28px;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.logo-main {
+    color: #ff4f2f;
+}
+
+.logo-sub {
+    color: #2c3e50;
+}
+
+.nav-links-desktop {
+    list-style: none;
+    display: flex;
+    gap: 2rem;
+    margin-left: 3rem;
+}
+
+.nav-links-desktop a {
+    color: #4a5568;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.nav-links-desktop a:hover {
+    color: #ff4f2f;
+}
+
+.search-bar-desktop {
+    display: flex;
+    border: 2px solid #ddd;
+    border-radius: 10px;
+}
+
+.search-bar-desktop input {
+    padding: .6rem 1rem;
+    outline: none;
+    border: none;
+}
+
+.search-bar-desktop button {
+    background: #ff4f2f;
+    border: none;
+    color: white;
+    padding: .6rem 1rem;
+    cursor: pointer;
+}
+
+.btn-login-desktop {
+    border: 2px solid #ff4f2f;
+    padding: .7rem 1.2rem;
+    color: #ff4f2f;
+    font-weight: 600;
+    border-radius: 10px;
+    text-decoration: none;
+}
+
+.btn-login-desktop:hover {
+    background: #ff4f2f;
+    color: white;
+}
+
+.btn-carrito-desktop {
+    padding: .7rem 1.2rem;
+    background: linear-gradient(135deg,#ff623d,#ff4027);
+    border: none;
+    color: white;
+    font-weight: 700;
+    border-radius: 10px;
+}
+
+/* ============================
+   BOTONES LOGIN Y CARRITO
+   ============================ */
+
+.user-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+/* LOGIN */
+.btn-login {
+    background: #5c6bc0;  /* Azul moderno */
+    color: #fff !important;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-weight: 700;
+    text-decoration: none;
+    display: inline-block;
+    width: 170px;
+    text-align: center;
+}
+
+.btn-login:hover {
+    background: #3f51b5;
+}
+
+/* CARRITO */
+.btn-carrito {
+    background: #26a69a;  /* Verde turquesa */
+    color: #fff !important;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-weight: 700;
+    text-decoration: none;
+    display: inline-block;
+    width: 170px;
+    text-align: center;
+}
+
+.btn-carrito:hover {
+    background: #1e8f80;
+}

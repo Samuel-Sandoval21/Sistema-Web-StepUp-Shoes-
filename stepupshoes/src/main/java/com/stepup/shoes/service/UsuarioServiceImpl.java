@@ -6,16 +6,15 @@ package com.stepup.shoes.service;
 
 import com.stepup.shoes.model.Usuario;
 import com.stepup.shoes.repository.UsuarioRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;  // ⬅️ AGREGAR ESTA LÍNEA
+import org.springframework.security.crypto.password.PasswordEncoder;
+
 import org.springframework.stereotype.Service;
+
 import java.util.List;
 import java.util.Optional;
 
-/**
- *
- * @author HP
- */
 @Service
 public class UsuarioServiceImpl implements UsuarioService {
 
@@ -23,7 +22,7 @@ public class UsuarioServiceImpl implements UsuarioService {
     private UsuarioRepository usuarioRepository;
 
     @Autowired
-    private PasswordEncoder passwordEncoder;  // ⬅️ AGREGAR ESTAS 2 LÍNEAS
+    private PasswordEncoder passwordEncoder;
 
     @Override
     public List<Usuario> findAll() {
@@ -42,10 +41,11 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     @Override
     public Usuario save(Usuario usuario) {
-        // ⬅️ AGREGAR ESTAS 3 LÍNEAS
+
         if (usuario.getPassword() != null && !usuario.getPassword().startsWith("$2a$")) {
             usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
         }
+
         return usuarioRepository.save(usuario);
     }
 
