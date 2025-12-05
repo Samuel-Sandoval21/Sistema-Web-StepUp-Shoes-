@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Checkout - StepUp Shoes</title>
+    <link rel="stylesheet" th:href="@{/css/checkout.css}">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body>
+
+<!-- HEADER -->
+<div th:replace="fragments/header :: header"></div>
+
+<div class="checkout-container">
+
+    <!-- ENCABEZADO -->
+    <div class="checkout-header">
+        <h1>Finalizar Compra</h1>
+        <p>Revisa tu información antes de procesar tu pedido.</p>
+    </div>
+
+    <!-- LAYOUT -->
+    <div class="checkout-layout">
+
+        <!-- FORMULARIO IZQUIERDA -->
+        <form class="checkout-form-section"
+              th:action="@{/checkout/procesar}" method="post">
+
+            <!-- DATOS PERSONALES -->
+            <div class="section-header">
+                <div class="section-icon">👤</div>
+                <h2 class="section-title">Datos Personales</h2>
+            </div>
+
+            <div class="form-grid">
+                <div class="checkout-form-group form-group-full">
+                    <label>Nombre Completo</label>
+                    <input type="text" name="nombreCompleto" required>
+                </div>
+
+                <div class="checkout-form-group">
+                    <label>Correo Electrónico</label>
+                    <input type="email" name="email" required>
+                </div>
+
+                <div class="checkout-form-group">
+                    <label>Teléfono</label>
+                    <input type="text" name="telefono" required>
+                </div>
+            </div>
+
+            <!-- ENVÍO -->
+            <div class="section-header">
+                <div class="section-icon">📦</div>
+                <h2 class="section-title">Dirección de Envío</h2>
+            </div>
+
+            <div class="form-grid">
+                <div class="checkout-form-group form-group-full">
+                    <label>Dirección</label>
+                    <input type="text" name="direccion" required>
+                </div>
+
+                <div class="checkout-form-group">
+                    <label>Ciudad</label>
+                    <input type="text" name="ciudad" required>
+                </div>
+
+                <div class="checkout-form-group">
+                    <label>Provincia</label>
+                    <input type="text" name="estado" required>
+                </div>
+
+                <div class="checkout-form-group">
+                    <label>Código Postal</label>
+                    <input type="text" name="codigoPostal" required>
+                </div>
+            </div>
+
+            <!-- MÉTODO ENVÍO -->
+            <div class="section-header">
+                <div class="section-icon">🚚</div>
+                <h2 class="section-title">Método de Envío</h2>
+            </div>
+
+            <div class="shipping-methods">
+
+                <label class="shipping-method">
+                    <input type="radio" name="metodoEnvio" value="estandar" checked>
+                    <div class="shipping-info">
+                        <div class="shipping-name">Envío Estándar</div>
+                        <div class="shipping-description">Entrega 3-5 días</div>
+                    </div>
+                    <div class="shipping-price">$10</div>
+                </label>
+
+                <label class="shipping-method">
+                    <input type="radio" name="metodoEnvio" value="express">
+                    <div class="shipping-info">
+                        <div class="shipping-name">Envío Express</div>
+                        <div class="shipping-description">Entrega 24 horas</div>
+                    </div>
+                    <div class="shipping-price">$20</div>
+                </label>
+
+                <label class="shipping-method" th:if="${subtotal >= 100}">
+                    <input type="radio" name="metodoEnvio" value="gratis">
+                    <div class="shipping-info">
+                        <div class="shipping-name">Envío Gratis</div>
+                        <div class="shipping-description">Compras mayores a $100</div>
+                    </div>
+                    <div class="shipping-free">GRATIS</div>
+                </label>
+
+            </div>
+
+            <!-- MÉTODO PAGO -->
+            <div class="section-header">
+                <div class="section-icon">💳</div>
+                <h2 class="section-title">Método de Pago</h2>
+            </div>
+
+            <div class="payment-methods">
+
+                <label class="payment-method">
+                    <input type="radio" name="metodoPago" value="tarjeta" checked>
+                    <div class="payment-info">
+                        <div class="payment-name">Tarjeta Crédito/Débito</div>
+                        <div class="payment-description">Visa, Mastercard, Amex</div>
+                    </div>
+                </label>
+
+                <label class="payment-method">
+                    <input type="radio" name="metodoPago" value="paypal">
+                    <div class="payment-info">
+                        <div class="payment-name">PayPal</div>
+                        <div class="payment-description">Paga con tu cuenta PayPal</div>
+                    </div>
+                </label>
+
+            </div>
+
+            <!-- BOTÓN -->
+            <div class="checkout-actions">
+                <button type="submit" class="btn-checkout btn-checkout-continue">
+                    Procesar Pedido
+                </button>
+            </div>
+
+        </form>
+
+        <!-- RESUMEN PEDIDO -->
+        <div class="order-summary">
+
+            <div class="summary-header">
+                <h3>Resumen del Pedido</h3>
+            </div>
+
+            <div class="summary-items">
+
+                <div th:each="item : ${carrito}" class="summary-item">
+
+                    <img th:src="@{/images/{img}(img=${item.imagen})}"
+                         class="summary-item-image">
+
+                    <div class="summary-item-details">
+                        <div class="summary-item-name" th:text="${item.nombre}"></div>
+                        <div class="summary-item-info">
+                            Cantidad: <span th:text="${item.cantidad}"></span>
+                        </div>
+                    </div>
+
+                    <div class="summary-item-price">
+                        $<span th:text="${item.precio}"></span>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="summary-totals">
+
+                <div class="summary-line">
+                    <span>Subtotal:</span> 
+                    <span>$<span th:text="${subtotal}"></span></span>
+                </div>
+
+                <div class="summary-line">
+                    <span>Envío:</span>
+                    <span>$<span th:text="${envio}"></span></span>
+                </div>
+
+                <div class="summary-total">
+                    Total: $<span th:text="${total}"></span>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- FOOTER -->
+<div th:replace="fragments/footer :: footer"></div>
+
+</body>
+</html>
