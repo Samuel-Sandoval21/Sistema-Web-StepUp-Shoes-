@@ -1,7 +1,10 @@
+C:\Users\aleja\OneDrive\Documents\Proyecto Desarrollo WEB\Sistema-Web-StepUp-Shoes-\stepupshoes\src\main\java\com\stepup\shoes\config\SecurityConfig.java
+C:\Users\aleja\OneDrive\Documents\Proyecto Desarrollo WEB\Sistema-Web-StepUp-Shoes-\stepupshoes\src\main\java\com\stepup\shoes\config\WebConfig.java
 C:\Users\aleja\OneDrive\Documents\Proyecto Desarrollo WEB\Sistema-Web-StepUp-Shoes-\stepupshoes\src\main\java\com\stepup\shoes\controller\AuthController.java
 C:\Users\aleja\OneDrive\Documents\Proyecto Desarrollo WEB\Sistema-Web-StepUp-Shoes-\stepupshoes\src\main\java\com\stepup\shoes\controller\CarritoController.java
 C:\Users\aleja\OneDrive\Documents\Proyecto Desarrollo WEB\Sistema-Web-StepUp-Shoes-\stepupshoes\src\main\java\com\stepup\shoes\controller\CatalogoController.java
 C:\Users\aleja\OneDrive\Documents\Proyecto Desarrollo WEB\Sistema-Web-StepUp-Shoes-\stepupshoes\src\main\java\com\stepup\shoes\controller\CheckoutController.java
+C:\Users\aleja\OneDrive\Documents\Proyecto Desarrollo WEB\Sistema-Web-StepUp-Shoes-\stepupshoes\src\main\java\com\stepup\shoes\controller\ContactoController.java
 C:\Users\aleja\OneDrive\Documents\Proyecto Desarrollo WEB\Sistema-Web-StepUp-Shoes-\stepupshoes\src\main\java\com\stepup\shoes\controller\HomeController.java
 C:\Users\aleja\OneDrive\Documents\Proyecto Desarrollo WEB\Sistema-Web-StepUp-Shoes-\stepupshoes\src\main\java\com\stepup\shoes\controller\UsuarioController.java
 C:\Users\aleja\OneDrive\Documents\Proyecto Desarrollo WEB\Sistema-Web-StepUp-Shoes-\stepupshoes\src\main\java\com\stepup\shoes\model\Categoria.java
@@ -13,8 +16,10 @@ C:\Users\aleja\OneDrive\Documents\Proyecto Desarrollo WEB\Sistema-Web-StepUp-Sho
 C:\Users\aleja\OneDrive\Documents\Proyecto Desarrollo WEB\Sistema-Web-StepUp-Shoes-\stepupshoes\src\main\java\com\stepup\shoes\repository\PedidoRepository.java
 C:\Users\aleja\OneDrive\Documents\Proyecto Desarrollo WEB\Sistema-Web-StepUp-Shoes-\stepupshoes\src\main\java\com\stepup\shoes\repository\ProductoRepository.java
 C:\Users\aleja\OneDrive\Documents\Proyecto Desarrollo WEB\Sistema-Web-StepUp-Shoes-\stepupshoes\src\main\java\com\stepup\shoes\repository\UsuarioRepository.java
+C:\Users\aleja\OneDrive\Documents\Proyecto Desarrollo WEB\Sistema-Web-StepUp-Shoes-\stepupshoes\src\main\java\com\stepup\shoes\security\CustomUserDetailsService.java
 C:\Users\aleja\OneDrive\Documents\Proyecto Desarrollo WEB\Sistema-Web-StepUp-Shoes-\stepupshoes\src\main\java\com\stepup\shoes\service\CategoriaService.java
 C:\Users\aleja\OneDrive\Documents\Proyecto Desarrollo WEB\Sistema-Web-StepUp-Shoes-\stepupshoes\src\main\java\com\stepup\shoes\service\CategoriaServiceImpl.java
+C:\Users\aleja\OneDrive\Documents\Proyecto Desarrollo WEB\Sistema-Web-StepUp-Shoes-\stepupshoes\src\main\java\com\stepup\shoes\service\FirebaseStorageService.java
 C:\Users\aleja\OneDrive\Documents\Proyecto Desarrollo WEB\Sistema-Web-StepUp-Shoes-\stepupshoes\src\main\java\com\stepup\shoes\service\PedidoService.java
 C:\Users\aleja\OneDrive\Documents\Proyecto Desarrollo WEB\Sistema-Web-StepUp-Shoes-\stepupshoes\src\main\java\com\stepup\shoes\service\PedidoServiceImpl.java
 C:\Users\aleja\OneDrive\Documents\Proyecto Desarrollo WEB\Sistema-Web-StepUp-Shoes-\stepupshoes\src\main\java\com\stepup\shoes\service\ProductoService.java
