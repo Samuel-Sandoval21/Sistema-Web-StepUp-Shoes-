@@ -26,6 +26,7 @@
                         <option value="Deportivas">Deportivas</option>
                         <option value="Casual">Casual</option>
                         <option value="Formal">Formal</option>
+                        <option value="Crocs">Crocs</option> <!-- ✅ Agregada -->
                     </select>
                 </div>
 
@@ -63,23 +64,31 @@
 
             <div class="card h-100 producto-card">
 
-                <img th:src="@{/images/{img}(img=${producto.imagenUrl})}"
-                     style="height:220px;object-fit:cover;">
+                <!-- ✅ CAMBIO CRÍTICO: Usar rutaImagenCompleta -->
+                <img th:src="${producto.rutaImagenCompleta}"
+                     th:alt="${producto.nombre}"
+                     style="height:220px;object-fit:cover;"
+                     onerror="this.src='/images/default.jpg'">
 
                 <div class="card-body">
 
                     <h5 th:text="${producto.nombre}"></h5>
-                    <p th:text="'$' + ${producto.precio}"></p>
+                    <!-- ✅ Formato de precio mejorado -->
+                    <p class="text-success fw-bold" 
+                       th:text="'$' + ${#numbers.formatDecimal(producto.precio, 1, 2)}">
+                    </p>
 
-                    <button class="btn btn-outline-primary"
-                            th:onclick="'window.location.href=\'/catalogo/producto/' + ${producto.id} + '\';'">
-                        Ver Detalles
-                    </button>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-primary btn-sm"
+                                th:onclick="'window.location.href=\'/catalogo/producto/' + ${producto.id} + '\';'">
+                            👁️ Ver Detalles
+                        </button>
 
-                    <button class="btn btn-primary"
-                            th:onclick="'agregarAlCarrito(' + ${producto.id} + ')'">
-                        Añadir al carrito
-                    </button>
+                        <button class="btn btn-primary btn-sm"
+                                th:onclick="'agregarAlCarrito(' + ${producto.id} + ')'">
+                            🛒 Añadir
+                        </button>
+                    </div>
 
                 </div>
             </div>
