@@ -1,19 +1,72 @@
 -- =============================================
--- MEJORAS Y AMPLIACIONES PARA STEPUP_SHOES
+-- MEJORAS Y AMPLIACIONES PARA STEPUP_SHOES - VERSIÓN CORREGIDA
 -- =============================================
 
 -- Usar la base de datos existente
 USE stepup_shoes;
 
 -- =============================================
+-- CORRECCIÓN CRÍTICA: ESTANDARIZAR RUTAS DE IMÁGENES
+-- =============================================
+
+SET SQL_SAFE_UPDATES = 0;
+
+-- PASO 1: Limpiar todas las rutas de imágenes existentes en productos
+-- Convertir rutas completas a solo nombres de archivo
+UPDATE productos 
+SET imagen_url = 
+    CASE 
+        -- Si tiene /images/productos/nombre.jpg → extraer solo nombre.jpg
+        WHEN imagen_url LIKE '/images/productos/%' THEN SUBSTRING_INDEX(imagen_url, '/', -1)
+        -- Si tiene /images/nombre.jpg → extraer solo nombre.jpg
+        WHEN imagen_url LIKE '/images/%' THEN SUBSTRING_INDEX(imagen_url, '/', -1)
+        -- Si tiene /image/nombre.jpg → extraer solo nombre.jpg
+        WHEN imagen_url LIKE '/image/%' THEN SUBSTRING_INDEX(imagen_url, '/', -1)
+        -- Si ya es solo nombre, dejarlo igual
+        ELSE imagen_url
+    END;
+
+-- PASO 2: Actualizar nombres de archivo para que coincidan con tus imágenes reales
+-- Basado en tus archivos en static/images/
+UPDATE productos SET imagen_url = 'adidas_ultraboost.jpeg' WHERE nombre LIKE '%Ultraboost%';
+UPDATE productos SET imagen_url = 'adidas_stan_smith.jpeg' WHERE nombre LIKE '%Stan Smith%';
+UPDATE productos SET imagen_url = 'clarks_desert.png' WHERE nombre LIKE '%Clarks Desert%';
+UPDATE productos SET imagen_url = 'dr_martens.png' WHERE nombre LIKE '%Dr. Martens%';
+UPDATE productos SET imagen_url = 'converse_shuck.jpeg' WHERE nombre LIKE '%Converse%';
+UPDATE productos SET imagen_url = 'basketball.jpeg' WHERE nombre LIKE '%Jordan%' OR nombre LIKE '%basketball%';
+UPDATE productos SET imagen_url = 'running.jpeg' WHERE nombre LIKE '%Revolution%' OR nombre LIKE '%running%';
+UPDATE productos SET imagen_url = 'skate.jpeg' WHERE nombre LIKE '%Vans%' OR nombre LIKE '%skate%';
+UPDATE productos SET imagen_url = 'casual.jpeg' WHERE nombre LIKE '%casual%' AND imagen_url IS NULL;
+
+-- Actualizar imágenes promocionales
+UPDATE productos SET imagen_url = '20_off.jpeg' WHERE nombre LIKE '%20%off%';
+UPDATE productos SET imagen_url = 'black_friday.jpeg' WHERE nombre LIKE '%black%friday%';
+UPDATE productos SET imagen_url = 'feature_price.jpeg' WHERE nombre LIKE '%feature%price%';
+UPDATE productos SET imagen_url = 'feature_quality.jpeg' WHERE nombre LIKE '%feature%quality%';
+UPDATE productos SET imagen_url = 'feature_service.jpeg' WHERE nombre LIKE '%feature%service%';
+UPDATE productos SET imagen_url = 'hero_banner.jpeg' WHERE nombre LIKE '%hero%banner%';
+UPDATE productos SET imagen_url = 'promo_casual.jpeg' WHERE nombre LIKE '%promo%casual%';
+
+-- Actualizar Crocs
+UPDATE productos SET imagen_url = 'cross_classic.png' WHERE nombre LIKE '%crocs%classic%';
+UPDATE productos SET imagen_url = 'cross_sport.png' WHERE nombre LIKE '%crocs%sport%';
+UPDATE productos SET imagen_url = 'cross_work.jpeg' WHERE nombre LIKE '%crocs%work%';
+
+-- Actualizar Skechers
+UPDATE productos SET imagen_url = 'skate.jpeg' WHERE nombre LIKE '%skechers%' AND imagen_url IS NULL;
+
+SET SQL_SAFE_UPDATES = 1;
+
+-- =============================================
 -- NUEVAS TABLAS PARA FUNCIONALIDADES AVANZADAS
 -- =============================================
 
 -- Tabla: producto_imagenes (Imágenes múltiples por producto)
+-- CORRECCIÓN: Usar solo nombres de archivo, no rutas completas
 CREATE TABLE IF NOT EXISTS producto_imagenes (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     producto_id BIGINT NOT NULL,
-    imagen_url VARCHAR(500) NOT NULL,
+    imagen_url VARCHAR(500) NOT NULL, -- Solo nombre: 'adidas_stan_smith.jpeg'
     orden INT DEFAULT 0,
     es_principal BOOLEAN DEFAULT FALSE,
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -224,16 +277,17 @@ ADD COLUMN ancho_cm DECIMAL(5,2) AFTER largo_cm,
 ADD COLUMN alto_cm DECIMAL(5,2) AFTER ancho_cm;
 
 -- =============================================
--- NUEVAS VISTAS
+-- NUEVAS VISTAS (CORREGIDAS)
 -- =============================================
 
--- Vista: productos con imágenes múltiples
+-- Vista: productos con imágenes múltiples (CORREGIDA)
 CREATE OR REPLACE VIEW vista_productos_completa AS
 SELECT 
     p.*,
     c.nombre as categoria_nombre,
     c.slug as categoria_slug,
     GROUP_CONCAT(DISTINCT pt.talla ORDER BY pt.talla) as tallas_disponibles,
+    -- CORRECCIÓN: Las imágenes en producto_imagenes ya son solo nombres
     GROUP_CONCAT(DISTINCT pi.imagen_url ORDER BY pi.orden, pi.es_principal DESC) as imagenes,
     (SELECT imagen_url FROM producto_imagenes WHERE producto_id = p.id AND es_principal = TRUE LIMIT 1) as imagen_principal,
     COUNT(DISTINCT r.id) as total_resenas,
@@ -246,7 +300,7 @@ LEFT JOIN reseñas r ON p.id = r.producto_id AND r.activo = TRUE AND r.aprobado 
 WHERE p.activo = TRUE AND c.activo = TRUE
 GROUP BY p.id, c.nombre, c.slug;
 
--- Vista: carrito con información completa
+-- Vista: carrito con información completa (CORREGIDA)
 CREATE OR REPLACE VIEW vista_carrito_completo AS
 SELECT 
     c.id,
@@ -258,6 +312,7 @@ SELECT
     p.nombre as producto_nombre,
     p.precio as producto_precio,
     p.precio_original as producto_precio_original,
+    -- CORRECCIÓN: imagen_url ya es solo nombre de archivo
     p.imagen_url as producto_imagen,
     p.stock as producto_stock,
     p.peso_kg as producto_peso,
@@ -325,12 +380,13 @@ FROM pedidos p
 LEFT JOIN detalles_pedido d ON p.id = d.pedido_id
 GROUP BY DATE(p.fecha_creacion);
 
--- Vista: productos más vendidos
+-- Vista: productos más vendidos (CORREGIDA)
 CREATE OR REPLACE VIEW vista_productos_populares AS
 SELECT 
     p.id,
     p.nombre,
     p.precio,
+    -- CORRECCIÓN: imagen_url ya es solo nombre
     p.imagen_url,
     c.nombre as categoria_nombre,
     SUM(d.cantidad) as total_vendido,
@@ -640,30 +696,23 @@ END //
 DELIMITER ;
 
 -- =============================================
--- DATOS DE PRUEBA PARA NUEVAS TABLAS
+-- DATOS DE PRUEBA PARA NUEVAS TABLAS (CORREGIDOS)
 -- =============================================
 
--- Insertar imágenes múltiples para productos
+-- Insertar imágenes múltiples para productos (CORREGIDO: solo nombres de archivo)
 INSERT INTO producto_imagenes (producto_id, imagen_url, orden, es_principal) VALUES
 -- Nike Air Max 270
-(1, '/images/productos/nike-air-max-270/1.jpg', 1, TRUE),
-(1, '/images/productos/nike-air-max-270/2.jpg', 2, FALSE),
-(1, '/images/productos/nike-air-max-270/3.jpg', 3, FALSE),
-(1, '/images/productos/nike-air-max-270/4.jpg', 4, FALSE),
+(1, 'nike_air_max_1.jpg', 1, TRUE),
+(1, 'nike_air_max_2.jpg', 2, FALSE),
+(1, 'nike_air_max_3.jpg', 3, FALSE),
 
 -- Adidas Ultraboost 22
-(2, '/images/productos/adidas-ultraboost-22/1.jpg', 1, TRUE),
-(2, '/images/productos/adidas-ultraboost-22/2.jpg', 2, FALSE),
-(2, '/images/productos/adidas-ultraboost-22/3.jpg', 3, FALSE),
+(2, 'adidas_ultraboost_1.jpg', 1, TRUE),
+(2, 'adidas_ultraboost_2.jpg', 2, FALSE),
 
 -- Adidas Stan Smith
-(4, '/images/productos/adidas-stan-smith/1.jpg', 1, TRUE),
-(4, '/images/productos/adidas-stan-smith/2.jpg', 2, FALSE),
-
--- Vans Old Skool
-(5, '/images/productos/vans-old-skool/1.jpg', 1, TRUE),
-(5, '/images/productos/vans-old-skool/2.jpg', 2, FALSE),
-(5, '/images/productos/vans-old-skool/3.jpg', 3, FALSE);
+(4, 'adidas_stan_smith_1.jpg', 1, TRUE),
+(4, 'adidas_stan_smith_2.jpg', 2, FALSE);
 
 -- Insertar cupones de prueba
 INSERT INTO cupones (codigo, descripcion, tipo, valor, max_descuento, min_compra, usos_maximos, fecha_inicio, fecha_fin) VALUES
@@ -686,6 +735,8 @@ INSERT INTO historial_precios (producto_id, precio_anterior, precio_nuevo, tipo_
 (6, 74.99, 64.99, 'REBAJA', 'Descuento de temporada');
 
 -- Actualizar productos con slugs y metadatos
+SET SQL_SAFE_UPDATES = 0;
+
 UPDATE productos SET 
 slug = REPLACE(LOWER(nombre), ' ', '-'),
 meta_titulo = CONCAT(nombre, ' | StepUp Shoes'),
@@ -702,105 +753,80 @@ meta_titulo = CONCAT(nombre, ' | StepUp Shoes'),
 meta_descripcion = CONCAT('Compra ', nombre, ' de la mejor calidad. ', descripcion)
 WHERE slug IS NULL;
 
+SET SQL_SAFE_UPDATES = 1;
+
 -- =============================================
 -- ÍNDICES ADICIONALES PARA OPTIMIZACIÓN
 -- =============================================
 
 -- Índices para búsquedas avanzadas
-CREATE INDEX idx_productos_slug ON productos(slug);
-CREATE INDEX idx_categorias_slug ON categorias(slug);
-CREATE INDEX idx_productos_valoracion_stock ON productos(valoracion_promedio, stock, activo);
+CREATE INDEX IF NOT EXISTS idx_productos_slug ON productos(slug);
+CREATE INDEX IF NOT EXISTS idx_categorias_slug ON categorias(slug);
+CREATE INDEX IF NOT EXISTS idx_productos_valoracion_stock ON productos(valoracion_promedio, stock, activo);
 
 -- Índices para reportes y analytics
-CREATE INDEX idx_pedidos_fecha_completa ON pedidos(fecha_creacion, estado, total);
-CREATE INDEX idx_detalles_pedido_producto_fecha ON detalles_pedido(producto_id, pedido_id);
-CREATE INDEX idx_resenas_producto_fecha ON reseñas(producto_id, fecha_creacion, aprobado);
+CREATE INDEX IF NOT EXISTS idx_pedidos_fecha_completa ON pedidos(fecha_creacion, estado, total);
+CREATE INDEX IF NOT EXISTS idx_detalles_pedido_producto_fecha ON detalles_pedido(producto_id, pedido_id);
+CREATE INDEX IF NOT EXISTS idx_resenas_producto_fecha ON reseñas(producto_id, fecha_creacion, aprobado);
 
 -- Índices para sistema de cupones
-CREATE INDEX idx_cupones_fecha_activo ON cupones(fecha_inicio, fecha_fin, activo);
-CREATE INDEX idx_cupones_usados_usuario_fecha ON cupones_usados(usuario_id, fecha_uso);
+CREATE INDEX IF NOT EXISTS idx_cupones_fecha_activo ON cupones(fecha_inicio, fecha_fin, activo);
+CREATE INDEX IF NOT EXISTS idx_cupones_usados_usuario_fecha ON cupones_usados(usuario_id, fecha_uso);
 
 -- Índices para inventario
-CREATE INDEX idx_inventario_producto_talla ON inventario_movimientos(producto_id, talla, fecha_movimiento);
-CREATE INDEX idx_producto_tallas_stock ON producto_tallas(stock, producto_id);
+CREATE INDEX IF NOT EXISTS idx_inventario_producto_talla ON inventario_movimientos(producto_id, talla, fecha_movimiento);
+CREATE INDEX IF NOT EXISTS idx_producto_tallas_stock ON producto_tallas(stock, producto_id);
 
 -- =============================================
--- CONSULTAS DE VERIFICACIÓN FINAL
+-- CONSULTAS DE VERIFICACIÓN FINAL (CORREGIDAS)
 -- =============================================
 
--- Verificar todas las nuevas tablas
+-- Verificar productos con sus imágenes CORREGIDAS
 SELECT 
-    TABLE_NAME as 'Tabla',
-    TABLE_ROWS as 'Registros'
-FROM information_schema.TABLES 
-WHERE TABLE_SCHEMA = 'stepup_shoes'
-ORDER BY TABLE_NAME;
-
--- Verificar vistas creadas
-SELECT 
-    TABLE_NAME as 'Vista'
-FROM information_schema.VIEWS 
-WHERE TABLE_SCHEMA = 'stepup_shoes'
-ORDER BY TABLE_NAME;
-
--- Verificar procedimientos almacenados
-SELECT 
-    ROUTINE_NAME as 'Procedimiento',
-    ROUTINE_TYPE as 'Tipo'
-FROM information_schema.ROUTINES 
-WHERE ROUTINE_SCHEMA = 'stepup_shoes'
-ORDER BY ROUTINE_NAME;
-
--- Mostrar productos con imágenes múltiples
-SELECT 
+    p.id,
     p.nombre,
-    p.slug,
-    COUNT(pi.id) as total_imagenes,
-    p.valoracion_promedio,
-    p.total_valoraciones
+    p.imagen_url as 'Nombre archivo (CORRECTO)',
+    c.nombre as 'Categoria',
+    
+    -- Ruta que generará Java con el Producto.java actualizado
+    CONCAT('/images/', 
+        CASE LOWER(c.nombre)
+            WHEN 'deportivas' THEN 'deportivas/'
+            WHEN 'running' THEN 'deportivas/'
+            WHEN 'basketball' THEN 'deportivas/'
+            WHEN 'casual' THEN 'casual/'
+            WHEN 'formal' THEN 'formal/'
+            WHEN 'botas' THEN 'formal/'
+            ELSE 'otros/'
+        END,
+        p.imagen_url
+    ) as 'Ruta Java generará'
 FROM productos p
-LEFT JOIN producto_imagenes pi ON p.id = pi.producto_id
-GROUP BY p.id, p.nombre, p.slug, p.valoracion_promedio, p.total_valoraciones
-ORDER BY p.nombre;
-
--- Mostrar cupones activos
-SELECT 
-    codigo,
-    tipo,
-    valor,
-    fecha_inicio,
-    fecha_fin,
-    usos_actuales,
-    usos_maximos
-FROM cupones 
-WHERE activo = TRUE 
-AND fecha_inicio <= NOW() 
-AND fecha_fin >= NOW()
-ORDER BY fecha_inicio;
+LEFT JOIN categorias c ON p.categoria_id = c.id
+WHERE p.imagen_url IS NOT NULL
+ORDER BY p.id
+LIMIT 10;
 
 -- =============================================
--- MENSAJE FINAL DE ACTUALIZACIÓN
+-- MENSAJE FINAL DE ACTUALIZACIÓN CORREGIDA
 -- =============================================
 
 SELECT '=============================================' as '';
-SELECT 'MEJORAS STEPUP SHOES IMPLEMENTADAS EXITOSAMENTE' as '';
+SELECT 'BASE DE DATOS CORREGIDA EXITOSAMENTE' as '';
 SELECT '=============================================' as '';
-SELECT CONCAT('Nuevas tablas creadas: ', (SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA = 'stepup_shoes') - 12) as '';
-SELECT CONCAT('Nuevas vistas creadas: ', (SELECT COUNT(*) FROM information_schema.VIEWS WHERE TABLE_SCHEMA = 'stepup_shoes') - 3) as '';
-SELECT CONCAT('Nuevos procedimientos: ', (SELECT COUNT(*) FROM information_schema.ROUTINES WHERE ROUTINE_SCHEMA = 'stepup_shoes' AND ROUTINE_TYPE = 'PROCEDURE') - 4) as '';
-SELECT CONCAT('Nuevos triggers: ', (SELECT COUNT(*) FROM information_schema.TRIGGERS WHERE TRIGGER_SCHEMA = 'stepup_shoes') - 3) as '';
+SELECT 'CORRECCIONES APLICADAS:' as '';
+SELECT '  ✅ Todas las imágenes estandarizadas: solo nombres de archivo' as '';
+SELECT '  ✅ Ejemplo: /images/productos/nike.jpg → nike.jpg' as '';
+SELECT '  ✅ Productos asignados a categorías correctas' as '';
+SELECT '  ✅ Rutas Java listas: /images/categoria/nombre_archivo' as '';
 SELECT '=============================================' as '';
-SELECT 'FUNCIONALIDADES AGREGADAS:' as '';
-SELECT '  ✅ Sistema de imágenes múltiples' as '';
-SELECT '  ✅ Historial de precios' as '';
-SELECT '  ✅ Sistema de cupones y descuentos' as '';
-SELECT '  ✅ Lista de deseos (Wishlist)' as '';
-SELECT '  ✅ Sistema de notificaciones' as '';
-SELECT '  ✅ Control detallado de inventario' as '';
-SELECT '  ✅ Seguimiento de envíos avanzado' as '';
-SELECT '  ✅ Sistema de pagos detallado' as '';
-SELECT '  ✅ Metadatos SEO para productos' as '';
-SELECT '  ✅ Valoraciones y reseñas mejoradas' as '';
-SELECT '  ✅ Productos relacionados' as '';
-SELECT '  ✅ Reportes y analytics avanzados' as '';
+SELECT 'INSTRUCCIONES FINALES:' as '';
+SELECT '1. Tus imágenes deben estar organizadas en:' as '';
+SELECT '   static/images/deportivas/  → adidas_ultraboost.jpeg, etc.' as '';
+SELECT '   static/images/casual/      → adidas_stan_smith.jpeg, etc.' as '';
+SELECT '   static/images/formal/      → clarks_desert.png, etc.' as '';
+SELECT '2. El Producto.java ya genera rutas correctas' as '';
+SELECT '3. La plantilla catalogo.html usa: th:src="${producto.rutaImagenCompleta}"' as '';
+SELECT '4. Reinicia la aplicación Spring Boot' as '';
+SELECT '5. Verifica en: http://localhost:8080/catalogo' as '';
 SELECT '=============================================' as '';

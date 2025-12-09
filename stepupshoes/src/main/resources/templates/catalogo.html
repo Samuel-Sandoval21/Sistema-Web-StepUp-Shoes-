@@ -1,98 +1,105 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <head th:replace="~{fragments/header :: head}"></head>
+
 <body>
-    <div th:replace="~{fragments/header :: header}"></div>
 
-    <!-- Contenido Principal -->
-    <main class="container my-5">
-        <div class="row">
-            <div class="col-12">
-                <h1 class="mb-4">🛍️ Catálogo de Productos</h1>
-                
-                <!-- Filtros -->
-                <div class="card mb-4">
-                    <div class="card-body">
-                        <h5 class="card-title">Filtrar Productos</h5>
-                        <div class="row">
-                            <div class="col-md-4">
-                                <label for="categoria" class="form-label">Categoría</label>
-                                <select class="form-select" id="categoria">
-                                    <option value="">Todas las categorías</option>
-                                    <option value="deportiva">Deportiva</option>
-                                    <option value="casual">Casual</option>
-                                    <option value="formal">Formal</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4">
-                                <label for="precio" class="form-label">Rango de Precio</label>
-                                <select class="form-select" id="precio">
-                                    <option value="">Todos los precios</option>
-                                    <option value="0-50">$0 - $50</option>
-                                    <option value="50-100">$50 - $100</option>
-                                    <option value="100-999">$100+</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4">
-                                <label for="ordenar" class="form-label">Ordenar por</label>
-                                <select class="form-select" id="ordenar">
-                                    <option value="nombre">Nombre A-Z</option>
-                                    <option value="precio-asc">Precio: Menor a Mayor</option>
-                                    <option value="precio-desc">Precio: Mayor a Menor</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
+<div th:replace="~{fragments/header :: header}"></div>
+
+<main class="container my-5">
+
+    <h1 class="mb-4">🛍️ Catálogo de Productos</h1>
+
+    <!-- Filtros -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h3 class="mb-3">Filtrar Productos</h3>
+
+            <form method="GET" action="/catalogo" class="row g-3">
+
+                <!-- Categoría -->
+                <div class="col-md-4">
+                    <label class="form-label">Categoría</label>
+                    <select name="categoria" class="form-select">
+                        <option value="">Todas</option>
+                        <option value="Deportivas">Deportivas</option>
+                        <option value="Casual">Casual</option>
+                        <option value="Formal">Formal</option>
+                        <option value="Crocs">Crocs</option> <!-- ✅ Agregada -->
+                    </select>
                 </div>
 
-                <!-- Grid de Productos -->
-                <div class="row">
-                    <div th:each="producto : ${productos}" class="col-lg-4 col-md-6 mb-4">
-                        <div class="card h-100 producto-card">
-                            <img th:src="${producto.imagenUrl}" 
-                                 th:alt="${producto.nombre}" 
-                                 class="card-img-top producto-imagen"
-                                 style="height: 200px; object-fit: cover;">
-                            
-                            <div th:if="${producto.destacado}" class="destacado-badge">⭐ Destacado</div>
-                            
-                            <div class="card-body d-flex flex-column">
-                                <h5 class="card-title" th:text="${producto.nombre}"></h5>
-                                <p class="card-text flex-grow-1" th:text="${producto.descripcion}"></p>
-                                <div class="mt-auto">
-                                    <p class="h5 text-primary mb-2" th:text="'$' + ${#numbers.formatDecimal(producto.precio, 1, 2)}"></p>
-                                    <div class="d-grid gap-2">
-                                        <button th:onclick="'abrirDetalleProducto(' + ${producto.id} + ')'" 
-                                                class="btn btn-outline-primary">
-                                            👀 Ver Detalles
-                                        </button>
-                                        <button th:onclick="'agregarAlCarrito(' + ${producto.id} + ')'" 
-                                                class="btn btn-primary">
-                                            🛒 Añadir al Carrito
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                <!-- Precio -->
+                <div class="col-md-4">
+                    <label class="form-label">Rango de Precio</label>
+                    <select name="rangoPrecio" class="form-select">
+                        <option value="">Todos</option>
+                        <option value="0-50">$0 - $50</option>
+                        <option value="50-100">$50 - $100</option>
+                        <option value="100+">+$100</option>
+                    </select>
                 </div>
 
-                <!-- Mensaje si no hay productos -->
-                <div th:if="${#lists.isEmpty(productos)}" class="text-center py-5">
-                    <h3>No se encontraron productos</h3>
-                    <p class="text-muted">Intenta con otros filtros de búsqueda.</p>
+                <!-- Orden -->
+                <div class="col-md-4">
+                    <label class="form-label">Ordenar por</label>
+                    <select name="orden" class="form-select">
+                        <option value="nombre-asc">Nombre A-Z</option>
+                        <option value="precio-asc">Precio Menor a Mayor</option>
+                        <option value="precio-desc">Precio Mayor a Menor</option>
+                    </select>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+
+    <!-- Productos -->
+    <div class="row">
+
+        <div class="col-lg-4 col-md-6 mb-4"
+             th:each="producto : ${productos}">
+
+            <div class="card h-100 producto-card">
+
+                <!-- ✅ CAMBIO CRÍTICO: Usar rutaImagenCompleta -->
+                <img th:src="${producto.rutaImagenCompleta}"
+                     th:alt="${producto.nombre}"
+                     style="height:220px;object-fit:cover;"
+                     onerror="this.src='/images/default.jpg'">
+
+                <div class="card-body">
+
+                    <h5 th:text="${producto.nombre}"></h5>
+                    <!-- ✅ Formato de precio mejorado -->
+                    <p class="text-success fw-bold" 
+                       th:text="'$' + ${#numbers.formatDecimal(producto.precio, 1, 2)}">
+                    </p>
+
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-primary btn-sm"
+                                th:onclick="'window.location.href=\'/catalogo/producto/' + ${producto.id} + '\';'">
+                            👁️ Ver Detalles
+                        </button>
+
+                        <button class="btn btn-primary btn-sm"
+                                th:onclick="'agregarAlCarrito(' + ${producto.id} + ')'">
+                            🛒 Añadir
+                        </button>
+                    </div>
+
                 </div>
             </div>
         </div>
-    </main>
+    </div>
 
-    <div th:replace="~{fragments/footer :: footer}"></div>
+</main>
 
-    <!-- Popups - COMENTAR LOS QUE NO EXISTEN -->
-    <div th:replace="~{fragments/popups :: popups}"></div>
-    <!-- 
-    <div th:replace="~{fragments/auth-popups :: auth-popups}"></div>
-    <div th:replace="~{fragments/carrito-popup :: carrito-popup}"></div>
-    -->
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+<script src="/js/carrito.js"></script>
+
 </body>
 </html>

@@ -815,3 +815,61 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/CascadeStyleSheet.css to ed
     border-radius: 8px;
     border: 1px solid #e9ecef;
 }
+
+/* ============================
+   FILTROS DE CATÁLOGO (NUEVO)
+   ============================ */
+.filters {
+    background: #1a1f29;
+    padding: 20px;
+    border-radius: 12px;
+    width: 300px;
+    color: white;
+    margin-bottom: 30px;
+}
+
+.filters h3 {
+    color: #fff;
+    font-size: 1.4rem;
+    margin-bottom: 15px;
+    font-weight: 700;
+}
+
+.filters form label {
+    margin-top: 12px;
+    font-weight: 600;
+    display: block;
+    color: #dfe6ef;
+}
+
+.filters form select {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+    margin-top: 5px;
+    font-size: 1rem;
+    background: #fff;
+    color: #111;
+    cursor: pointer;
+}
+
+.btn-filtrar, 
+.filters form button {
+    background: #4a7bff;
+    color: #fff;
+    margin-top: 20px;
+    border-radius: 8px;
+    width: 100%;
+    padding: 10px;
+    border: none;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.btn-filtrar:hover,
+.filters form button:hover {
+    transform: translateY(-2px);
+    background-color: #365dd8;
+}

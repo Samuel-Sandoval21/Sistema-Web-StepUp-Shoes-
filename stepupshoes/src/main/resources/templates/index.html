@@ -31,7 +31,11 @@
             
             <div class="productos-grid">
                 <div th:each="producto : ${productosDestacados}" class="producto-card">
-                    <img th:src="${producto.imagenUrl}" th:alt="${producto.nombre}" class="producto-imagen">
+                    <img th:src="@{'/static.images/' + ${producto.imagenUrl}}"
+                     th:alt="${producto.nombre}"
+                      class="producto-imagen">
+
+ 
                     <div class="destacado-badge">⭐ Destacado</div>
                     <div class="producto-info">
                         <h3 class="producto-nombre" th:text="${producto.nombre}"></h3>

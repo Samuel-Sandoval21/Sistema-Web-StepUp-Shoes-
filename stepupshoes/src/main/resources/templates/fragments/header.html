@@ -1,51 +1,64 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:fragment="head">
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="${titulo} + ' - StepUp Shoes'">StepUp Shoes</title>
-    <link rel="stylesheet" th:href="@{/css/style.css}">
-    <link rel="stylesheet" th:href="@{/css/catalogo.css}">
-    <link rel="stylesheet" th:href="@{/css/auth.css}">
-    <link rel="stylesheet" th:href="@{/css/carrito.css}">
-    <link rel="stylesheet" th:href="@{/css/checkout.css}">
-</head>
+    <head th:fragment="head">
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title th:text="${titulo} + ' - StepUp Shoes'">StepUp Shoes</title>
+        <link rel="stylesheet" th:href="@{/css/style.css}">
+        <link rel="stylesheet" th:href="@{/css/catalogo.css}">
+        <link rel="stylesheet" th:href="@{/css/auth.css}">
+        <link rel="stylesheet" th:href="@{/css/carrito.css}">
+        <link rel="stylesheet" th:href="@{/css/checkout.css}">
+        <link rel="stylesheet" th:href="@{/css/nav.css}">
+    </head>
 
-<div th:fragment="header">
-    <header class="header">
-        <div class="container">
-            <nav class="navbar">
-                <a th:href="@{/}" class="logo">StepUp Shoes</a>
-                
-                <ul class="nav-links">
-                    <li><a th:href="@{/}">Inicio</a></li>
-                    <li><a th:href="@{/catalogo}">Catálogo</a></li>
-                    <li><a th:href="@{/promociones}">Promociones</a></li>
-                    <li><a th:href="@{/contacto}">Contacto</a></li>
-                </ul>
-                
-                <div class="nav-actions">
-                    <!-- Buscador -->
-                    <form th:action="@{/catalogo/buscar}" method="get" class="search-form">
-                        <input type="text" name="q" placeholder="Buscar productos..." style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
-                    </form>
-                    
-                    <!-- Acciones de usuario - CORREGIDO -->
-                    <div class="user-actions">
-                        <!-- ✅ CAMBIADO: href="#" por th:href="@{/login}" -->
-                        <a th:href="@{/login}" class="btn btn-outline">Iniciar Sesión</a>
-                        <!-- ✅ MANTENIDO: onclick para carrito (si tienes el modal) -->
-                        <a href="#" onclick="mostrarCarrito()" class="btn btn-primary">Carrito (<span id="carrito-count">0</span>)</a>
+    <div th:fragment="header">
+        <header class="header">
+            <div class="container">
+                <nav class="navbar">
+                    <a th:href="@{/}" class="logo">StepUp Shoes</a>
+
+                    <ul class="nav-links">
+                        <li><a th:href="@{/}">Inicio</a></li>
+                        <li><a th:href="@{/catalogo}">Catálogo</a></li>
+                        <li><a th:href="@{/promociones}">Promociones</a></li>
+                        <li><a th:href="@{/contacto}">Contacto</a></li>
+                    </ul>
+
+                    <div class="nav-actions">
+
+                        <!-- Buscador -->
+                        <form th:action="@{/catalogo/buscar}" method="get" class="search-form">
+                            <input type="text" name="q" placeholder="Buscar productos...">
+                        </form>
+
+                        <!-- Usuario y Carrito -->
+                        <div class="user-actions">
+                            <a th:href="@{/login}" class="btn-login">INICIAR SESIÓN</a>
+
+                            <a th:href="@{/carrito/ver}" class="btn-carrito">
+                                🛒 Carrito (<span id="carritoCountDesktop">0</span>)
+                            </a>
+
+                        </div>
+
+
                     </div>
-                </div>
-            </nav>
-        </div>
-    </header>
-</div>
+                </nav>
+            </div>
+        </header>
+    </div>
 
-<!-- Scripts -->
-<script th:src="@{/js/main.js}"></script>
-<script th:src="@{/js/carrito.js}"></script>
-<script th:src="@{/js/auth.js}"></script>
-<script th:src="@{/js/checkout.js}"></script>
+    <!-- POPUP DEL CARRITO (OBLIGATORIO) -->
+    <div id="popup-carrito" class="popup" style="display: none;">
+        <div class="popup-content">
+            <div id="carrito-content"></div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script th:src="@{/js/main.js}"></script>
+    <script th:src="@{/js/carrito.js}"></script>
+    <script th:src="@{/js/auth.js}"></script>
+    <script th:src="@{/js/checkout.js}"></script>
 </html>

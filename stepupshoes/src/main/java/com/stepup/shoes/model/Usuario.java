@@ -3,7 +3,6 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package com.stepup.shoes.model;
-
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDateTime;
@@ -12,39 +11,39 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "usuarios")
 public class Usuario {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
-    @Column(nullable = false)
+
+    @Column(nullable=false)
     private String nombre;
-    
-    @Column(nullable = false, unique = true)
+
+    @Column(nullable=false, unique=true)
     private String email;
-    
-    @Column(nullable = false)
+
+    @Column(nullable=false)
     private String password;
-    
+
     private String telefono;
-    
+
     private LocalDateTime fechaNacimiento;
-    
-    @Column(name = "fecha_registro")
+
+    @Column(name="fecha_registro")
     private LocalDateTime fechaRegistro = LocalDateTime.now();
-    
-    @Column(name = "ultima_sesion")
+
+    @Column(name="ultima_sesion")
     private LocalDateTime ultimaSesion;
-    
-    // ✅ AGREGAR ESTE CAMPO
+
     private Boolean activo = true;
-    
+
     @Enumerated(EnumType.STRING)
     private Rol rol = Rol.CLIENTE;
-    
+
     private String codigoVerificacion;
-    
+
     private Boolean verificado = false;
-    
+
     public enum Rol {
         CLIENTE, ADMINISTRADOR, EMPLEADO
     }
