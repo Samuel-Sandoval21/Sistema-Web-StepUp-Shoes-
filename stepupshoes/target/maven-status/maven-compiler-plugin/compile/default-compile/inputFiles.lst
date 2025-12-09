@@ -1,3 +1,4 @@
+C:\CMisRepositoriosMiProyectoGit\Sistema-Web-StepUp-Shoes-\stepupshoes\src\main\java\com\stepup\shoes\config\FirebaseConfig.java
 C:\CMisRepositoriosMiProyectoGit\Sistema-Web-StepUp-Shoes-\stepupshoes\src\main\java\com\stepup\shoes\config\SecurityConfig.java
 C:\CMisRepositoriosMiProyectoGit\Sistema-Web-StepUp-Shoes-\stepupshoes\src\main\java\com\stepup\shoes\config\WebConfig.java
 C:\CMisRepositoriosMiProyectoGit\Sistema-Web-StepUp-Shoes-\stepupshoes\src\main\java\com\stepup\shoes\controller\AuthController.java
@@ -5,6 +6,7 @@ C:\CMisRepositoriosMiProyectoGit\Sistema-Web-StepUp-Shoes-\stepupshoes\src\main\
 C:\CMisRepositoriosMiProyectoGit\Sistema-Web-StepUp-Shoes-\stepupshoes\src\main\java\com\stepup\shoes\controller\CatalogoController.java
 C:\CMisRepositoriosMiProyectoGit\Sistema-Web-StepUp-Shoes-\stepupshoes\src\main\java\com\stepup\shoes\controller\CheckoutController.java
 C:\CMisRepositoriosMiProyectoGit\Sistema-Web-StepUp-Shoes-\stepupshoes\src\main\java\com\stepup\shoes\controller\ContactoController.java
+C:\CMisRepositoriosMiProyectoGit\Sistema-Web-StepUp-Shoes-\stepupshoes\src\main\java\com\stepup\shoes\controller\FirebaseController.java
 C:\CMisRepositoriosMiProyectoGit\Sistema-Web-StepUp-Shoes-\stepupshoes\src\main\java\com\stepup\shoes\controller\HomeController.java
 C:\CMisRepositoriosMiProyectoGit\Sistema-Web-StepUp-Shoes-\stepupshoes\src\main\java\com\stepup\shoes\controller\UsuarioController.java
 C:\CMisRepositoriosMiProyectoGit\Sistema-Web-StepUp-Shoes-\stepupshoes\src\main\java\com\stepup\shoes\model\Categoria.java
