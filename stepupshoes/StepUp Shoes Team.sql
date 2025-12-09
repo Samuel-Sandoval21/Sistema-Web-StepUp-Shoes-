@@ -760,22 +760,42 @@ SET SQL_SAFE_UPDATES = 1;
 -- =============================================
 
 -- Índices para búsquedas avanzadas
-CREATE INDEX IF NOT EXISTS idx_productos_slug ON productos(slug);
-CREATE INDEX IF NOT EXISTS idx_categorias_slug ON categorias(slug);
-CREATE INDEX IF NOT EXISTS idx_productos_valoracion_stock ON productos(valoracion_promedio, stock, activo);
+DROP INDEX idx_productos_slug ON productos;
+CREATE INDEX idx_productos_slug ON productos(slug);
+
+DROP INDEX idx_categorias_slug ON categorias;
+CREATE INDEX idx_categorias_slug ON categorias(slug);
+
+DROP INDEX idx_productos_valoracion_stock ON productos;
+CREATE INDEX idx_productos_valoracion_stock ON productos(valoracion_promedio, stock, activo);
 
 -- Índices para reportes y analytics
-CREATE INDEX IF NOT EXISTS idx_pedidos_fecha_completa ON pedidos(fecha_creacion, estado, total);
-CREATE INDEX IF NOT EXISTS idx_detalles_pedido_producto_fecha ON detalles_pedido(producto_id, pedido_id);
-CREATE INDEX IF NOT EXISTS idx_resenas_producto_fecha ON reseñas(producto_id, fecha_creacion, aprobado);
+DROP INDEX idx_pedidos_fecha_completa ON pedidos;
+CREATE INDEX idx_pedidos_fecha_completa ON pedidos(fecha_creacion, estado, total);
+
+DROP INDEX idx_detalles_pedido_producto_fecha ON detalles_pedido;
+CREATE INDEX idx_detalles_pedido_producto_fecha ON detalles_pedido(producto_id, pedido_id);
+
+DROP INDEX idx_resenas_producto_fecha ON reseñas;
+CREATE INDEX idx_resenas_producto_fecha ON reseñas(producto_id, fecha_creacion, aprobado);
 
 -- Índices para sistema de cupones
-CREATE INDEX IF NOT EXISTS idx_cupones_fecha_activo ON cupones(fecha_inicio, fecha_fin, activo);
-CREATE INDEX IF NOT EXISTS idx_cupones_usados_usuario_fecha ON cupones_usados(usuario_id, fecha_uso);
+DROP INDEX idx_cupones_fecha_activo ON cupones;
+CREATE INDEX idx_cupones_fecha_activo ON cupones(fecha_inicio, fecha_fin, activo);
+
+DROP INDEX idx_cupones_usados_usuario_fecha ON cupones_usados;
+CREATE INDEX idx_cupones_usados_usuario_fecha ON cupones_usados(usuario_id, fecha_uso);
+
 
 -- Índices para inventario
-CREATE INDEX IF NOT EXISTS idx_inventario_producto_talla ON inventario_movimientos(producto_id, talla, fecha_movimiento);
-CREATE INDEX IF NOT EXISTS idx_producto_tallas_stock ON producto_tallas(stock, producto_id);
+DROP INDEX idx_inventario_producto_talla ON inventario_movimientos;
+CREATE INDEX idx_inventario_producto_talla ON inventario_movimientos(producto_id, talla, fecha_movimiento);
+
+DROP INDEX idx_producto_tallas_stock ON producto_tallas;
+CREATE INDEX idx_producto_tallas_stock ON producto_tallas(stock, producto_id);
+
+
+
 
 -- =============================================
 -- CONSULTAS DE VERIFICACIÓN FINAL (CORREGIDAS)
@@ -830,3 +850,5 @@ SELECT '3. La plantilla catalogo.html usa: th:src="${producto.rutaImagenCompleta
 SELECT '4. Reinicia la aplicación Spring Boot' as '';
 SELECT '5. Verifica en: http://localhost:8080/catalogo' as '';
 SELECT '=============================================' as '';
+
+
