@@ -24,6 +24,18 @@
         <div class="card-body">
             <h3 class="mb-3">Filtrar Productos</h3>
             <form method="GET" action="/catalogo" class="row g-3" id="filtroForm">
+                <!-- Búsqueda -->
+                <div class="col-md-12">
+                    <label class="form-label">Buscar Producto</label>
+                    <div class="input-group">
+                        <input type="text" name="busqueda" class="form-control" id="busquedaInput"
+                               placeholder="Escribe el nombre o descripción del producto..."
+                               th:value="${param.busqueda}">
+                        <button class="btn btn-outline-primary" type="submit" id="btnBuscar">
+                            🔍 Buscar
+                        </button>
+                    </div>
+                </div>
                 <!-- Mantén tus selects igual -->
                 <div class="col-md-4">
                     <label class="form-label">Categoría</label>
@@ -104,7 +116,7 @@
                         </p>
                         
                         <div class="d-flex gap-2">
-                            <a th:href="@{'/catalogo/producto/' + ${producto.id}}"
+                            <a th:href="@{'/producto/' + ${producto.id}}"
                                class="btn btn-outline-primary btn-sm flex-fill">
                                 👁️ Ver Detalles
                             </a>
@@ -112,7 +124,7 @@
                             <button class="btn btn-primary btn-sm flex-fill btn-agregar-carrito"
                                     th:data-id="${producto.id}"
                                     th:data-nombre="${producto.nombre}"
-                                    onclick="agregarAlCarrito(this)">
+                                    onclick="agregarAlCarrito(this); return false;">
                                 🛒 Añadir
                             </button>
                         </div>
@@ -195,14 +207,90 @@ function agregarAlCarrito(boton) {
     const productoId = boton.dataset.id;
     const productoNombre = boton.dataset.nombre;
     
-    // Deshabilitar botón temporalmente
-    boton.disabled = true;
-    const textoOriginal = boton.innerHTML;
-    boton.innerHTML = '⌛ Procesando...';
+    // Mostrar modal o prompt para seleccionar talla y cantidad
+    mostrarSelectorTallaYCantidad(productoId, productoNombre, boton);
+}
+
+// ✅ Función para mostrar selector de talla y cantidad
+function mostrarSelectorTallaYCantidad(productoId, productoNombre, boton) {
+    // Crear un modal simple con HTML
+    const modal = document.createElement('div');
+    modal.id = 'selectorModal-' + productoId;
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+    `;
     
-    console.log(`🛒 Agregando producto ${productoId} - ${productoNombre}`);
+    modal.innerHTML = `
+        <div style="background: white; padding: 30px; border-radius: 10px; max-width: 400px; width: 90%;">
+            <h5 style="margin-bottom: 20px;">Agregar "${productoNombre}" al carrito</h5>
+            
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 8px; font-weight: bold;">Selecciona tu Talla:</label>
+                <select id="tallaSelect" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
+                    <option value="">-- Selecciona una talla --</option>
+                    <option value="35">35</option>
+                    <option value="36">36</option>
+                    <option value="37">37</option>
+                    <option value="38">38</option>
+                    <option value="39">39</option>
+                    <option value="40">40</option>
+                    <option value="41">41</option>
+                    <option value="42">42</option>
+                    <option value="43">43</option>
+                    <option value="44">44</option>
+                </select>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; font-weight: bold;">Cantidad:</label>
+                <input type="number" id="cantidadInput" min="1" max="5" value="1" 
+                       style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
+            </div>
+            
+            <div style="display: flex; gap: 10px;">
+                <button onclick="enviarAlCarrito(${productoId}, '${productoNombre}')" 
+                        style="flex: 1; padding: 10px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">
+                    ✅ Agregar
+                </button>
+                <button onclick="cerrarSelector(${productoId})" 
+                        style="flex: 1; padding: 10px; background: #6c757d; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                    ✕ Cancelar
+                </button>
+            </div>
+        </div>
+    `;
     
-    fetch('/carrito/agregar/' + productoId, {
+    document.body.appendChild(modal);
+    document.getElementById('tallaSelect').focus();
+}
+
+// ✅ Función para enviar al carrito
+function enviarAlCarrito(productoId, productoNombre) {
+    const talla = document.getElementById('tallaSelect').value;
+    const cantidad = parseInt(document.getElementById('cantidadInput').value) || 1;
+    
+    if (!talla) {
+        alert('Por favor selecciona una talla');
+        return;
+    }
+    
+    if (cantidad < 1 || cantidad > 5) {
+        alert('La cantidad debe ser entre 1 y 5');
+        return;
+    }
+    
+    console.log(`🛒 Agregando producto ${productoId} - Talla: ${talla} - Cantidad: ${cantidad}`);
+    
+    fetch(`/carrito/agregar?productoId=${productoId}&talla=${talla}&cantidad=${cantidad}`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -216,12 +304,9 @@ function agregarAlCarrito(boton) {
         throw new Error('Error en la respuesta del servidor');
     })
     .then(data => {
+        cerrarSelector(productoId);
+        
         if (data.success) {
-            // Feedback visual
-            boton.innerHTML = '✅ Agregado';
-            boton.classList.remove('btn-primary');
-            boton.classList.add('btn-success');
-            
             // Actualizar contador
             const contador = document.getElementById('carritoCountDesktop');
             if (contador) {
@@ -230,27 +315,23 @@ function agregarAlCarrito(boton) {
             
             // Mensaje toast
             mostrarToast(`"${productoNombre}" agregado al carrito`, 'success');
-            
-            // Restaurar botón después de 2 segundos
-            setTimeout(() => {
-                boton.disabled = false;
-                boton.innerHTML = textoOriginal;
-                boton.classList.remove('btn-success');
-                boton.classList.add('btn-primary');
-            }, 2000);
         } else {
             mostrarToast(data.message || 'Error al agregar producto', 'error');
-            boton.disabled = false;
-            boton.innerHTML = textoOriginal;
         }
     })
     .catch(error => {
         console.error('Error:', error);
         mostrarToast('Error de conexión. Intenta nuevamente.', 'error');
-        boton.disabled = false;
-        boton.innerHTML = textoOriginal;
+        cerrarSelector(productoId);
     });
 }
+
+// ✅ Función para cerrar selector
+function cerrarSelector(productoId) {
+    const modal = document.getElementById('selectorModal-' + productoId);
+    if (modal) {
+        modal.remove();
+    }
 
 // ✅ Función para mostrar toast (reemplaza alert())
 function mostrarToast(mensaje, tipo = 'info') {
@@ -315,6 +396,26 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // ✅ 2. Configurar filtros (solo una vez)
     if (!eventListenersAgregados) {
+        // Configurar botón de búsqueda
+        const btnBuscar = document.getElementById('btnBuscar');
+        if (btnBuscar) {
+            btnBuscar.addEventListener('click', function(e) {
+                e.preventDefault();
+                document.getElementById('filtroForm').submit();
+            });
+        }
+        
+        // Configurar input de búsqueda (Enter para buscar)
+        const inputBusqueda = document.getElementById('busquedaInput');
+        if (inputBusqueda) {
+            inputBusqueda.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    document.getElementById('filtroForm').submit();
+                }
+            });
+        }
+        
         const selects = ['categoriaSelect', 'precioSelect', 'ordenSelect'];
         selects.forEach(id => {
             const select = document.getElementById(id);

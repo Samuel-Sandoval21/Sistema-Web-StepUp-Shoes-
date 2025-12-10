@@ -4,15 +4,15 @@
  */
 package com.stepup.shoes.controller;
 
-import com.stepup.shoes.model.Producto;
-import com.stepup.shoes.service.ProductoService;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import java.util.List;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+
+import com.stepup.shoes.model.Producto;
+import com.stepup.shoes.service.ProductoService;
 
 @Controller
 public class HomeController {
