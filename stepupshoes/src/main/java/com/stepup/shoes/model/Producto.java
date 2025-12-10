@@ -9,139 +9,88 @@ import java.util.List;
 @Entity
 @Table(name = "productos")
 public class Producto {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
     @Column(nullable = false)
     private String nombre;
-    
+
     @Column(length = 1000)
     private String descripcion;
-    
+
     @Column(nullable = false)
     private Double precio;
-    
+
     private Double precioOriginal;
-    
+
     private Integer stock;
-    
-    private String imagenUrl;  // Puede ser: "nombre.jpg" o "/images/nombre.jpg" o "/images/carpeta/nombre.jpg"
-    
+
+    // ⭐ IMPORTANTE: ESTA URL VIENE DE FIREBASE
+    private String imagenUrl;
+
     private Boolean destacado = false;
-    
+
     private Boolean activo = true;
-    
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "categoria_id")
     private Categoria categoria;
-    
+
     @ElementCollection
     @CollectionTable(name = "producto_tallas", joinColumns = @JoinColumn(name = "producto_id"))
     @Column(name = "talla")
     private List<Integer> tallasDisponibles;
-    
+
     @Column(name = "fecha_creacion")
     private LocalDateTime fechaCreacion = LocalDateTime.now();
-    
+
     @Column(name = "fecha_actualizacion")
     private LocalDateTime fechaActualizacion = LocalDateTime.now();
-    
-    // ✅ NUEVO MÉTODO MEJORADO: Obtener ruta completa de la imagen
+
+    // =====================================================
+    // ⭐ MÉTODO SIMPLE Y CORRECTO: Imagen Firebase o default
+    // =====================================================
     public String getRutaImagenCompleta() {
-        if (imagenUrl == null || imagenUrl.isEmpty()) {
-            return "/images/default.jpg";  // Imagen por defecto si no hay imagen
+
+        // Si no hay imagen → imagen default
+        if (imagenUrl == null || imagenUrl.isBlank()) {
+            return "/images/default.jpg";
         }
-        
-        // CASO 1: Si ya es una ruta completa que empieza con /images/
-        if (imagenUrl.startsWith("/images/")) {
-            String[] partes = imagenUrl.split("/");
-            
-            // Ejemplo: /images/20_off.jpg → ["", "images", "20_off.jpg"]
-            if (partes.length == 3) {
-                // Solo tiene /images/nombre.jpg → necesita subcarpeta
-                String subcarpeta = determinarSubcarpeta();
-                String nombreArchivo = partes[2];
-                return "/images/" + subcarpeta + "/" + nombreArchivo;
-            } 
-            // Ejemplo: /images/promos/20_off.jpg → ya está completo
-            else if (partes.length >= 4) {
-                return imagenUrl; // Ya tiene estructura completa con subcarpeta
-            }
+
+        // Si la URL apunta a Firebase (https://firebasestorage...)
+        if (imagenUrl.startsWith("http://") || imagenUrl.startsWith("https://")) {
+            return imagenUrl;
         }
-        
-        // CASO 2: Si solo es nombre de archivo (ej: "20_off.jpg")
-        // CASO 3: Si es otra cosa (ruta antigua o formato diferente)
-        String subcarpeta = determinarSubcarpeta();
-        return "/images/" + subcarpeta + "/" + extraerNombreArchivo(imagenUrl);
+
+        // Si por alguna razón se guardó solo el nombre
+ if (!imagenUrl.startsWith("http")) {
+        // Generar URL pública de Firebase
+        try {
+            String encodedFileName = java.net.URLEncoder.encode(imagenUrl, "UTF-8");
+            return String.format(
+                "https://firebasestorage.googleapis.com/v0/b/stepup-shoes-3fbfb.appspot.com/o/productos%%2F%s?alt=media",
+                encodedFileName
+            );
+        } catch (Exception e) {
+            return "https://via.placeholder.com/300x220/CCCCCC/666666?text=Error+Imagen";
+        }
     }
     
-    // ✅ Método auxiliar: Extraer solo el nombre del archivo de cualquier ruta
-    private String extraerNombreArchivo(String ruta) {
-        if (ruta == null || ruta.isEmpty()) {
-            return "default.jpg";
-        }
-        
-        // Si tiene barras, extraer la última parte
-        if (ruta.contains("/")) {
-            String[] partes = ruta.split("/");
-            return partes[partes.length - 1];
-        }
-        
-        // Si no tiene barras, es ya el nombre del archivo
-        return ruta;
-    }
-    
-    // ✅ Determinar subcarpeta según categoría
-    private String determinarSubcarpeta() {
-        if (categoria == null || categoria.getNombre() == null) {
-            return "otros";  // Carpeta por defecto si no hay categoría
-        }
-        
-        String nombreCategoria = categoria.getNombre().toLowerCase();
-        
-        // Mapeo de categorías a subcarpetas
-        return switch (nombreCategoria) {
-            case "deportivas", "deportivo", "skechers" -> "deportivas";
-            case "casual", "vans", "converse" -> "casual";
-            case "formal", "formales", "oxford", "derby", "loafer", "monk" -> "formal";
-            case "crocs" -> "crocs";
-            case "promociones", "promos", "ofertas", "banners" -> "promos";
-            default -> "otros";
-        };
-    }
-    
-    // ✅ Método para debug: Ver qué ruta se está generando
-    public String getInfoRutaImagen() {
-        if (imagenUrl == null) return "imagenUrl es null";
-        
-        String resultado = "Original: " + imagenUrl + "\n";
-        resultado += "Nombre archivo extraído: " + extraerNombreArchivo(imagenUrl) + "\n";
-        resultado += "Subcarpeta determinada: " + determinarSubcarpeta() + "\n";
-        resultado += "Ruta completa: " + getRutaImagenCompleta();
-        
-        return resultado;
-    }
-    
-    // ✅ Método para actualizar fecha de modificación automáticamente
+    return imagenUrl;
+}
+
+// ✅ AÑADE este método para diagnóstico
+public String getTipoImagen() {
+    if (imagenUrl == null) return "NULL";
+    if (imagenUrl.startsWith("https://firebasestorage")) return "FIREBASE";
+    if (imagenUrl.startsWith("http")) return "EXTERNAL";
+    return "LOCAL_FILE";
+}
+    // Actualiza fecha automáticamente
     @PreUpdate
     public void preUpdate() {
         this.fechaActualizacion = LocalDateTime.now();
-    }
-    
-    // ✅ Método estático para limpiar ruta (si necesitas limpiar la BD después)
-    public static String limpiarRutaImagen(String rutaCompleta) {
-        if (rutaCompleta == null || rutaCompleta.isEmpty()) {
-            return "";
-        }
-        
-        // Quitar /images/ si está al inicio
-        if (rutaCompleta.startsWith("/images/")) {
-            rutaCompleta = rutaCompleta.substring(8); // Quita "/images/"
-        }
-        
-        // Extraer solo el nombre del archivo (última parte después de /)
-        String[] partes = rutaCompleta.split("/");
-        return partes[partes.length - 1];
     }
 }

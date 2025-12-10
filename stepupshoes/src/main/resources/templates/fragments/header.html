@@ -1,17 +1,28 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+    <!-- ✅ MANTENER: head fragment como está -->
     <head th:fragment="head">
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title th:text="${titulo} + ' - StepUp Shoes'">StepUp Shoes</title>
+        
+        <!-- ✅ AÑADIR: Bootstrap primero -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        
+        <!-- ✅ ORDENAR: CSS en orden lógico -->
+        <link rel="stylesheet" th:href="@{/css/nav.css}">
         <link rel="stylesheet" th:href="@{/css/style.css}">
+        
+        <!-- ✅ QUITAR TEMPORALMENTE: CSS condicionales para probar -->
+        <!-- 
         <link rel="stylesheet" th:href="@{/css/catalogo.css}">
         <link rel="stylesheet" th:href="@{/css/auth.css}">
         <link rel="stylesheet" th:href="@{/css/carrito.css}">
         <link rel="stylesheet" th:href="@{/css/checkout.css}">
-        <link rel="stylesheet" th:href="@{/css/nav.css}">
+        -->
     </head>
 
+    <!-- ✅ MANTENER: header fragment como está pero CORREGIR errores -->
     <div th:fragment="header">
         <header class="header">
             <div class="container">
@@ -39,9 +50,7 @@
                             <a th:href="@{/carrito/ver}" class="btn-carrito">
                                 🛒 Carrito (<span id="carritoCountDesktop">0</span>)
                             </a>
-
                         </div>
-
 
                     </div>
                 </nav>
@@ -49,16 +58,18 @@
         </header>
     </div>
 
-    <!-- POPUP DEL CARRITO (OBLIGATORIO) -->
+    <!-- ✅ MANTENER: popup pero con display none por defecto -->
     <div id="popup-carrito" class="popup" style="display: none;">
         <div class="popup-content">
             <div id="carrito-content"></div>
         </div>
     </div>
 
-    <!-- Scripts -->
+    <!-- ✅ CORREGIR: Scripts - PONERLOS AQUÍ PERO MÁS ADELANTE LOS MOVEREMOS -->
+    <!-- 
     <script th:src="@{/js/main.js}"></script>
     <script th:src="@{/js/carrito.js}"></script>
     <script th:src="@{/js/auth.js}"></script>
     <script th:src="@{/js/checkout.js}"></script>
+    -->
 </html>

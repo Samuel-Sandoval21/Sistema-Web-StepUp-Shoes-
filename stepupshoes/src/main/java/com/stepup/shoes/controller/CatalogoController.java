@@ -25,24 +25,45 @@ public class CatalogoController {
     @Autowired
     private CategoriaService categoriaService;
 
-    @GetMapping
-    public String mostrarCatalogo(
-            @RequestParam(required = false) String categoria,
-            @RequestParam(required = false) String rangoPrecio,
-            @RequestParam(required = false) String orden,
-            Model model) {
+@GetMapping
+public String mostrarCatalogo(
+        @RequestParam(required = false) String categoria,
+        @RequestParam(required = false) String rangoPrecio,
+        @RequestParam(required = false) String orden,
+        Model model) {
 
-        List<Producto> productos = aplicarFiltrosYOrdenamiento(categoria, rangoPrecio, orden);
-
-        model.addAttribute("productos", productos);
-        model.addAttribute("categorias", categoriaService.findAll());
-        model.addAttribute("categoriaSeleccionada", categoria);
-        model.addAttribute("precioSeleccionado", rangoPrecio);
-        model.addAttribute("ordenSeleccionado", orden);
-        model.addAttribute("titulo", "Catálogo - StepUp Shoes");
-
-        return "catalogo";
+    System.out.println("🔍 DEBUG: Iniciando mostrarCatalogo");
+    
+    // Obtener productos
+    List<Producto> productos = aplicarFiltrosYOrdenamiento(categoria, rangoPrecio, orden);
+    
+    // ✅ DIAGNÓSTICO DETALLADO
+    System.out.println("📊 Total productos: " + productos.size());
+    int firebaseCount = 0, localCount = 0, nullCount = 0;
+    
+    for (Producto p : productos) {
+        System.out.println("➡ Producto: " + p.getNombre() + 
+                         " | URL: " + p.getImagenUrl() +
+                         " | Ruta: " + p.getRutaImagenCompleta() +
+                         " | Tipo: " + p.getTipoImagen());
+        
+        if (p.getImagenUrl() == null) nullCount++;
+        else if (p.getImagenUrl().contains("firebasestorage")) firebaseCount++;
+        else localCount++;
     }
+    
+    System.out.println("📊 Resumen - Firebase: " + firebaseCount + 
+                     " | Local: " + localCount + " | Null: " + nullCount);
+    
+    model.addAttribute("productos", productos);
+    model.addAttribute("categorias", categoriaService.findAll());
+    model.addAttribute("titulo", "Catálogo");
+    
+    // ✅ AGREGAR variable para saber si usar Firebase
+    model.addAttribute("usarFirebase", true); // Cambia a false para probar sin Firebase
+    
+    return "catalogo";
+}
 
     @GetMapping("/producto/{id}")
     public String verProducto(@PathVariable Long id, Model model) {

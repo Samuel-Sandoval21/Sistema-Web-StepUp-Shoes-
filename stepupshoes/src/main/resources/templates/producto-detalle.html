@@ -3,6 +3,7 @@
 <head th:replace="~{fragments/header :: head}">
     <title th:text="${producto.nombre} + ' - StepUp Shoes'">Detalle del Producto</title>
 </head>
+
 <body>
 
 <div th:replace="~{fragments/header :: header}"></div>
@@ -10,16 +11,21 @@
 <main class="container">
     <div class="producto-detalle-container">
 
-        <!-- Galería -->
+        <!-- GALERÍA -->
         <div class="producto-galeria">
             <div class="galeria-principal">
-                <img th:src="@{/images/{img}(img=${producto.imagenUrl})}"
+
+                <!-- ⭐ IMAGEN FIREBASE -->
+                <img th:src="${producto.rutaImagenCompleta}"
                      th:alt="${producto.nombre}"
-                     id="imagenPrincipal">
+                     id="imagenPrincipal"
+                     style="width:100%; height:400px; object-fit:contain;"
+                     onerror="this.src='/images/default.jpg'">
+
             </div>
         </div>
 
-        <!-- Información -->
+        <!-- INFORMACIÓN -->
         <div class="producto-info-detalle">
 
             <div th:if="${producto.destacado}" class="producto-badge">⭐ Destacado</div>
@@ -34,12 +40,13 @@
 
             <p class="producto-descripcion-detalle" th:text="${producto.descripcion}"></p>
 
-            <!-- Selector de Cantidad -->
+            <!-- CANTIDAD -->
             <div class="cantidad-selector">
                 <label>Cantidad:</label>
+
                 <div class="cantidad-controls">
                     <button class="cantidad-btn" onclick="modificarCantidad(-1)">-</button>
-                    <span class="cantidad-value" id="cantidadValue">1</span>
+                    <span id="cantidadValue">1</span>
                     <button class="cantidad-btn" onclick="modificarCantidad(1)">+</button>
                 </div>
 
@@ -48,8 +55,9 @@
                 </span>
             </div>
 
-            <!-- Acciones -->
+            <!-- ACCIONES -->
             <div class="producto-acciones-detalle">
+
                 <button class="btn btn-primary btn-agregar-carrito"
                         onclick="agregarAlCarritoDesdeDetalle([[${producto.id}]])">
                     🛒 Añadir al Carrito
@@ -59,6 +67,7 @@
                         onclick="comprarAhora([[${producto.id}]])">
                     ⚡ Comprar Ahora
                 </button>
+
             </div>
 
         </div>
@@ -67,73 +76,27 @@
 
 <div th:replace="~{fragments/footer :: footer}"></div>
 
-
-<!-- Funciones JS -->
 <script>
     let cantidadSeleccionada = 1;
     const stockMaximo = [[${producto.stock}]];
 
     function modificarCantidad(cambio) {
-        const nuevaCantidad = cantidadSeleccionada + cambio;
-
-        if (nuevaCantidad >= 1 && nuevaCantidad <= stockMaximo) {
-            cantidadSeleccionada = nuevaCantidad;
-            document.getElementById("cantidadValue").innerText = nuevaCantidad;
+        const nueva = cantidadSeleccionada + cambio;
+        if (nueva >= 1 && nueva <= stockMaximo) {
+            cantidadSeleccionada = nueva;
+            document.getElementById("cantidadValue").innerText = nueva;
         }
     }
 
-    function agregarAlCarritoDesdeDetalle(idProducto) {
-        agregarAlCarrito(idProducto, null, cantidadSeleccionada);
+    function agregarAlCarritoDesdeDetalle(id) {
+        agregarAlCarrito(id, null, cantidadSeleccionada);
     }
 
-    function comprarAhora(idProducto) {
-        agregarAlCarrito(idProducto, null, cantidadSeleccionada);
+    function comprarAhora(id) {
+        agregarAlCarrito(id, null, cantidadSeleccionada);
         setTimeout(() => window.location.href = "/checkout", 500);
     }
 </script>
-
-<style>
-    .producto-detalle-container {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 3rem;
-        margin: 2rem 0;
-    }
-
-    .galeria-principal img {
-        width: 100%;
-        height: 400px;
-        object-fit: contain;
-    }
-
-    .cantidad-controls {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        margin: 1rem 0;
-    }
-
-    .cantidad-btn {
-        width: 40px;
-        height: 40px;
-        border: 1px solid #ddd;
-        background: white;
-        border-radius: 5px;
-        cursor: pointer;
-    }
-
-    .producto-acciones-detalle {
-        display: flex;
-        gap: 1rem;
-        margin-top: 2rem;
-    }
-
-    @media (max-width: 768px) {
-        .producto-detalle-container {
-            grid-template-columns: 1fr;
-        }
-    }
-</style>
 
 <script src="/js/carrito.js"></script>
 
