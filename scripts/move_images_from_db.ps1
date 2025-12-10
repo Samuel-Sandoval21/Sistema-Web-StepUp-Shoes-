@@ -23,7 +23,10 @@ param(
     [string]$DbName = 'stepup_shoes',
     [string]$DbUser = 'root',
     [string]$DbPass = '',
-    [switch]$DryRun
+    [switch]$DryRun,
+    [switch]$Move,
+    [switch]$Force,
+    [switch]$PreserveSubfolders
 )
 
 # Workspace root (assumes running from repo root)
@@ -142,9 +145,14 @@ foreach ($line in $lines) {
     if ($path.StartsWith('static/images/')) { $path = $path.Substring(13) }
 
     # Final target path
-    $targetRelative = Join-Path $folder $path
-    # Ensure no duplicate folder: if path already contains folder segments, don't duplicate
-    if ($path.StartsWith($folder + '/')) { $targetRelative = $path }
+    if ($PreserveSubfolders) {
+        $targetRelative = Join-Path $folder $path
+        # Ensure no duplicate folder: if path already contains folder segments, don't duplicate
+        if ($path.StartsWith($folder + '/')) { $targetRelative = $path }
+    } else {
+        # Flatten into single file under the category folder
+        $targetRelative = Join-Path $folder $fileName
+    }
 
     $targetFull = Join-Path $staticImagesRoot $targetRelative
     $targetDir = Split-Path $targetFull -Parent
@@ -159,18 +167,44 @@ foreach ($line in $lines) {
         if (-not $candidate) { $candidate = $found | Select-Object -First 1 }
 
         $sourceFull = $candidate.FullName
-        $action = 'copy'
-        $logLine = "$fileName,$prodId,`"$prodNombre`",$categoria,$targetRelative,$sourceFull,$action"
+        $op = $Move ? 'move' : 'copy'
+        $logLine = "$fileName,$prodId,`"$prodNombre`",$categoria,$targetRelative,$sourceFull,$op"
         Add-Content $logFile $logLine
 
         if ($DryRun) {
-            Write-Host "[DRY] Would copy: $sourceFull -> $targetFull"
+            Write-Host "[DRY] Would $op: $sourceFull -> $targetFull"
         } else {
             if (-not (Test-Path $targetDir)) { New-Item -ItemType Directory -Path $targetDir -Force | Out-Null }
-            Copy-Item -Path $sourceFull -Destination $targetFull -Force
-            Write-Host "Copied: $sourceFull -> $targetFull"
-            Add-Content $logFile "Copied: $sourceFull -> $targetFull"
-            $copied++
+
+            $shouldPerform = $true
+            if (Test-Path $targetFull) {
+                if ($Force) {
+                    $shouldPerform = $true
+                } else {
+                    $shouldPerform = $false
+                }
+            }
+
+            if (-not $shouldPerform) {
+                Write-Host "Skipped (exists): $targetFull" -ForegroundColor DarkYellow
+                Add-Content $logFile "Skipped (exists): $targetFull"
+            } else {
+                try {
+                    if ($Move) {
+                        if ($Force) { Move-Item -Path $sourceFull -Destination $targetFull -Force -ErrorAction Stop } else { Move-Item -Path $sourceFull -Destination $targetFull -ErrorAction Stop }
+                        Write-Host "Moved: $sourceFull -> $targetFull"
+                        Add-Content $logFile "Moved: $sourceFull -> $targetFull"
+                    } else {
+                        if ($Force) { Copy-Item -Path $sourceFull -Destination $targetFull -Force -ErrorAction Stop } else { Copy-Item -Path $sourceFull -Destination $targetFull -ErrorAction Stop }
+                        Write-Host "Copied: $sourceFull -> $targetFull"
+                        Add-Content $logFile "Copied: $sourceFull -> $targetFull"
+                    }
+                    $copied++
+                } catch {
+                    Write-Host "ERROR performing $op for $sourceFull -> $targetFull : $_" -ForegroundColor Red
+                    Add-Content $logFile "ERROR performing $op for $sourceFull -> $targetFull : $_"
+                }
+            }
         }
     } else {
         # Not found
