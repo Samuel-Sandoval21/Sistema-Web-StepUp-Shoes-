@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Carrito de Compras</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body>
+
+<!-- NAV -->
+<div th:replace="fragments/header :: header"></div>
+
+<main class="container my-5">
+
+    <h1 class="text-center mb-4">🛒 Carrito de Compras</h1>
+
+    <!-- ⚠️ Carrito vacío -->
+    <div th:if="${#lists.isEmpty(carrito)}" class="text-center py-5">
+        <h3>Tu carrito está vacío.</h3>
+        <p class="text-muted">Agrega productos desde el catálogo.</p>
+        <a th:href="@{/catalogo}" class="btn btn-primary mt-3">Ir al catálogo</a>
+    </div>
+
+    <!-- 🟩 Carrito con productos -->
+    <div th:if="${!#lists.isEmpty(carrito)}">
+
+        <table class="table table-bordered text-center align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Producto</th>
+                    <th>Imagen</th>
+                    <th>Talla</th>
+                    <th>Precio</th>
+                    <th>Cantidad</th>
+                    <th>Subtotal</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                <tr th:each="item, i : ${carrito}">
+                    <td th:text="${item.nombre}"></td>
+
+                    <td>
+                        <img th:src="@{/images/{img}(img=${item.imagen})}"
+                             style="width: 80px; height: 80px; object-fit: cover;">
+                    </td>
+
+                    <td th:text="${item.talla}"></td>
+
+                    <td th:text="'$' + ${item.precio}"></td>
+
+                    <td>
+                        <button class="btn btn-sm btn-outline-dark"
+                                onclick="actualizarCantidad([[${i.index}]], -1)">−</button>
+
+                        <span class="mx-2" th:text="${item.cantidad}"></span>
+
+                        <button class="btn btn-sm btn-outline-dark"
+                                onclick="actualizarCantidad([[${i.index}]], 1)">+</button>
+                    </td>
+
+                    <td th:text="'$' + (${item.precio} * ${item.cantidad})"></td>
+
+                    <td>
+                        <button class="btn btn-danger btn-sm"
+                                onclick="eliminar([[${i.index}]])">Eliminar</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- 🧮 Totales -->
+        <div class="text-end mt-4">
+            <h4>Subtotal: $<span th:text="${subtotal}"></span></h4>
+            <h4>Envío: 
+                <span th:if="${envio == 0}" class="text-success">GRATIS</span>
+                <span th:if="${envio != 0}" th:text="'$' + ${envio}"></span>
+            </h4>
+            <h3>Total: $<span th:text="${total}"></span></h3>
+        </div>
+
+        <!-- 🟩 Botón para ir al checkout -->
+        <div class="text-end mt-4">
+            <a th:href="@{/checkout}" class="btn btn-success btn-lg">
+                Proceder al Pago 💳
+            </a>
+        </div>
+
+    </div>
+
+</main>
+
+<!-- FOOTER -->
+<div th:replace="fragments/footer :: footer"></div>
+
+<!-- JS -->
+<script src="/js/carrito.js"></script>
+
+<script>
+    function actualizarCantidad(index, cambio) {
+        fetch("/carrito/actualizar?index=" + index + "&cambio=" + cambio, {
+            method: "POST"
+        })
+        .then(r => r.json())
+        .then(() => location.reload());
+    }
+
+    function eliminar(index) {
+        fetch("/carrito/eliminar?index=" + index, {
+            method: "POST"
+        })
+        .then(r => r.json())
+        .then(() => location.reload());
+    }
+</script>
+
+</body>
+</html>

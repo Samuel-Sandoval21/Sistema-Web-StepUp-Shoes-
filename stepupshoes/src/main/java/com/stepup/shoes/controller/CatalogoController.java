@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.stepup.shoes.controller;
 
 import com.stepup.shoes.model.Categoria;
@@ -12,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -32,113 +29,94 @@ public class CatalogoController {
             @RequestParam(required = false) String rangoPrecio,
             @RequestParam(required = false) String orden,
             Model model) {
-        
-        List<Producto> productos = aplicarFiltrosYOrdenamiento(categoria, rangoPrecio, orden);
-        List<Categoria> categorias = categoriaService.findAll();
-        
-        model.addAttribute("productos", productos);
-        model.addAttribute("categorias", categorias);
-        model.addAttribute("categoriaSeleccionada", categoria);
-        model.addAttribute("rangoPrecioSeleccionado", rangoPrecio);
-        model.addAttribute("ordenSeleccionado", orden);
-        model.addAttribute("titulo", "Nuestro Catálogo - StepUp Shoes");
-        
-        return "catalogo";
-    }
 
-    @GetMapping("/buscar")
-    public String buscarProductos(@RequestParam String q, Model model) {
-        List<Producto> productos = productoService.buscarPorTermino(q);
-        List<Categoria> categorias = categoriaService.findAll();
+        List<Producto> productos = aplicarFiltrosYOrdenamiento(categoria, rangoPrecio, orden);
         
+        // ✅ DEBUG: Mostrar URLs generadas en consola
+        System.out.println("\n=== DEBUG FIREBASE IMAGES ===");
+        System.out.println("Total productos: " + productos.size());
+        for (Producto p : productos) {
+            System.out.println("ID: " + p.getId() + 
+                             " | Nombre: " + p.getNombre() + 
+                             " | imagenUrl: '" + p.getImagenUrl() + "'" +
+                             " | Ruta Firebase: " + p.getRutaImagenCompleta());
+        }
+        System.out.println("=== FIN DEBUG ===\n");
+
         model.addAttribute("productos", productos);
-        model.addAttribute("categorias", categorias);
-        model.addAttribute("terminoBusqueda", q);
-        model.addAttribute("titulo", "Resultados de búsqueda: " + q + " - StepUp Shoes");
+        model.addAttribute("categorias", categoriaService.findAll());
+        model.addAttribute("categoriaSeleccionada", categoria);
+        model.addAttribute("precioSeleccionado", rangoPrecio);
+        model.addAttribute("ordenSeleccionado", orden);
+        model.addAttribute("titulo", "Catálogo - StepUp Shoes");
+
         return "catalogo";
     }
 
     @GetMapping("/producto/{id}")
     public String verProducto(@PathVariable Long id, Model model) {
         Producto producto = productoService.findById(id);
-        if (producto == null) {
-            return "redirect:/catalogo";
-        }
+        if (producto == null) return "redirect:/catalogo";
         
-        // Obtener productos relacionados (misma categoría)
-        List<Producto> productosRelacionados = productoService.findByCategoriaNombre(
-            producto.getCategoria().getNombre()
-        ).stream()
-         .filter(p -> !p.getId().equals(id))
-         .limit(4)
-         .collect(Collectors.toList());
-        
+        // ✅ DEBUG para producto individual
+        System.out.println("\n=== DEBUG PRODUCTO INDIVIDUAL ===");
+        System.out.println(producto.getInfoRutaImagen());
+        System.out.println("=== FIN DEBUG ===\n");
+
         model.addAttribute("producto", producto);
-        model.addAttribute("productosRelacionados", productosRelacionados);
-        model.addAttribute("titulo", producto.getNombre() + " - StepUp Shoes");
         return "producto-detalle";
     }
 
-    @GetMapping("/categoria/{categoriaNombre}")
-    public String productosPorCategoria(@PathVariable String categoriaNombre, Model model) {
-        List<Producto> productos = productoService.findByCategoriaNombre(categoriaNombre);
-        List<Categoria> categorias = categoriaService.findAll();
-        
-        model.addAttribute("productos", productos);
-        model.addAttribute("categorias", categorias);
-        model.addAttribute("categoriaSeleccionada", categoriaNombre);
-        model.addAttribute("titulo", categoriaNombre + " - StepUp Shoes");
-        return "catalogo";
-    }
-
     private List<Producto> aplicarFiltrosYOrdenamiento(String categoria, String rangoPrecio, String orden) {
-        List<Producto> productos;
-        
-        // Aplicar filtros
+        List<Producto> productos = productoService.findAll();
+
+        // FILTRAR CATEGORÍA
         if (categoria != null && !categoria.isEmpty()) {
-            if (rangoPrecio != null && !rangoPrecio.isEmpty()) {
-                Double[] precios = parseRangoPrecio(rangoPrecio);
-                productos = productoService.findByCategoriaAndPrecioBetween(categoria, precios[0], precios[1]);
-            } else {
-                productos = productoService.findByCategoriaNombre(categoria);
-            }
-        } else if (rangoPrecio != null && !rangoPrecio.isEmpty()) {
-            Double[] precios = parseRangoPrecio(rangoPrecio);
-            productos = productoService.findByPrecioBetween(precios[0], precios[1]);
-        } else {
-            productos = productoService.findAll();
+            productos = productos.stream()
+                    .filter(p -> p.getCategoria() != null && 
+                                 p.getCategoria().getNombre().equalsIgnoreCase(categoria))
+                    .collect(Collectors.toList());
         }
-        
-        // Aplicar ordenamiento
+
+        // FILTRAR PRECIO
+        if (rangoPrecio != null && !rangoPrecio.isEmpty()) {
+            Double[] r = switch (rangoPrecio) {
+                case "0-50" -> new Double[]{0.0, 50.0};
+                case "50-100" -> new Double[]{50.0, 100.0};
+                case "100+" -> new Double[]{100.0, 999999.0};
+                default -> new Double[]{0.0, 999999.0};
+            };
+
+            productos = productos.stream()
+                    .filter(p -> p.getPrecio() != null && p.getPrecio() >= r[0] && p.getPrecio() <= r[1])
+                    .collect(Collectors.toList());
+        }
+
+        // ORDENAMIENTO
         if (orden != null && !orden.isEmpty()) {
-            productos = aplicarOrdenamiento(productos, orden);
+            productos = switch (orden) {
+                case "precio-asc" ->
+                    productos.stream()
+                            .sorted(Comparator.comparing(Producto::getPrecio, 
+                                    Comparator.nullsLast(Comparator.naturalOrder())))
+                            .toList();
+
+                case "precio-desc" ->
+                    productos.stream()
+                            .sorted(Comparator.comparing(Producto::getPrecio, 
+                                    Comparator.nullsLast(Comparator.naturalOrder())).reversed())
+                            .toList();
+
+                case "nombre-asc" ->
+                    productos.stream()
+                            .sorted(Comparator.comparing(Producto::getNombre, 
+                                    Comparator.nullsLast(Comparator.naturalOrder())))
+                            .toList();
+
+                default -> productos;
+            };
         }
-        
+
         return productos;
-    }
-
-    private Double[] parseRangoPrecio(String rangoPrecio) {
-        return switch (rangoPrecio) {
-            case "menos-50" -> new Double[]{0.0, 49.99};
-            case "50-100" -> new Double[]{50.0, 100.0};
-            case "100-150" -> new Double[]{100.01, 150.0};
-            case "150-200" -> new Double[]{150.01, 200.0};
-            default -> new Double[]{0.0, 10000.0};
-        };
-    }
-
-    private List<Producto> aplicarOrdenamiento(List<Producto> productos, String orden) {
-        return switch (orden) {
-            case "precio-asc" -> productos.stream()
-                    .sorted(Comparator.comparing(Producto::getPrecio))
-                    .collect(Collectors.toList());
-            case "precio-desc" -> productos.stream()
-                    .sorted(Comparator.comparing(Producto::getPrecio).reversed())
-                    .collect(Collectors.toList());
-            case "nombre-asc" -> productos.stream()
-                    .sorted(Comparator.comparing(Producto::getNombre))
-                    .collect(Collectors.toList());
-            default -> productos;
-        };
     }
 }

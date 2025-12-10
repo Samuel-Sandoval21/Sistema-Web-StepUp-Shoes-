@@ -1,47 +1,273 @@
 -- =============================================
--- MEJORAS Y AMPLIACIONES PARA STEPUP_SHOES
+-- COMPLETE DATABASE FOR STEPUP SHOES - FIREBASE EDITION
 -- =============================================
 
--- Usar la base de datos existente
+-- Crear base de datos si no existe
+CREATE DATABASE IF NOT EXISTS stepup_shoes CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE stepup_shoes;
 
 -- =============================================
--- NUEVAS TABLAS PARA FUNCIONALIDADES AVANZADAS
+-- TABLAS PRINCIPALES (CORREGIDAS PARA FIREBASE)
 -- =============================================
 
--- Tabla: producto_imagenes (Imágenes múltiples por producto)
-CREATE TABLE IF NOT EXISTS producto_imagenes (
+-- Tabla: categorias
+CREATE TABLE IF NOT EXISTS categorias (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    producto_id BIGINT NOT NULL,
-    imagen_url VARCHAR(500) NOT NULL,
-    orden INT DEFAULT 0,
-    es_principal BOOLEAN DEFAULT FALSE,
+    nombre VARCHAR(100) NOT NULL UNIQUE,
+    descripcion TEXT,
+    imagen_url VARCHAR(500), -- Solo nombre: 'deportivos.jpeg'
+    activo BOOLEAN DEFAULT TRUE,
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    meta_titulo VARCHAR(200),
+    meta_descripcion TEXT,
+    slug VARCHAR(100) UNIQUE,
     
-    FOREIGN KEY (producto_id) REFERENCES productos(id) ON DELETE CASCADE,
-    UNIQUE KEY uk_imagen_principal (producto_id, es_principal),
-    INDEX idx_producto_imagenes_orden (producto_id, orden),
-    INDEX idx_imagenes_principal (es_principal)
+    INDEX idx_categorias_activo (activo),
+    INDEX idx_categorias_slug (slug)
 );
 
--- Tabla: historial_precios (Seguimiento de cambios de precio)
-CREATE TABLE IF NOT EXISTS historial_precios (
+-- Tabla: productos (IMPORTANTE: imagen_url solo nombres para Firebase)
+CREATE TABLE IF NOT EXISTS productos (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(200) NOT NULL,
+    descripcion TEXT,
+    precio DECIMAL(10,2) NOT NULL CHECK (precio >= 0),
+    precio_original DECIMAL(10,2),
+    stock INT DEFAULT 0 CHECK (stock >= 0),
+    descuento DECIMAL(5,2) DEFAULT 0.00 CHECK (descuento >= 0 AND descuento <= 100),
+    
+    -- ✅ CRÍTICO: Solo NOMBRE de archivo (no ruta completa)
+    -- Ejemplo: 'adidas_ultraboost.jpeg', 'running.jpeg', 'basketball.jpeg'
+    imagen_url VARCHAR(500),
+    
+    destacado BOOLEAN DEFAULT FALSE,
+    activo BOOLEAN DEFAULT TRUE,
+    categoria_id BIGINT NOT NULL,
+    
+    -- Nuevas columnas para valoraciones
+    valoracion_promedio DECIMAL(3,2) DEFAULT 0.00,
+    total_valoraciones INT DEFAULT 0,
+    
+    -- SEO y organización
+    productos_relacionados JSON,
+    meta_titulo VARCHAR(200),
+    meta_descripcion TEXT,
+    slug VARCHAR(200) UNIQUE,
+    
+    -- Dimensiones
+    peso_kg DECIMAL(5,2),
+    largo_cm DECIMAL(5,2),
+    ancho_cm DECIMAL(5,2),
+    alto_cm DECIMAL(5,2),
+    
+    fechas
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (categoria_id) REFERENCES categorias(id) ON DELETE RESTRICT,
+    INDEX idx_productos_categoria (categoria_id),
+    INDEX idx_productos_activo (activo),
+    INDEX idx_productos_destacado (destacado),
+    INDEX idx_productos_precio (precio),
+    INDEX idx_productos_valoracion (valoracion_promedio),
+    INDEX idx_productos_slug (slug)
+);
+
+-- Tabla: producto_tallas (inventario por talla)
+CREATE TABLE IF NOT EXISTS producto_tallas (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     producto_id BIGINT NOT NULL,
-    precio_anterior DECIMAL(10,2),
-    precio_nuevo DECIMAL(10,2) NOT NULL,
-    tipo_cambio ENUM('ACTUALIZACION', 'PROMOCION', 'REBAJA', 'AUMENTO') DEFAULT 'ACTUALIZACION',
-    fecha_cambio TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    usuario_cambio VARCHAR(100),
-    motivo TEXT,
+    talla INT NOT NULL CHECK (talla BETWEEN 35 AND 50),
+    stock INT NOT NULL DEFAULT 0 CHECK (stock >= 0),
     
     FOREIGN KEY (producto_id) REFERENCES productos(id) ON DELETE CASCADE,
-    INDEX idx_historial_producto (producto_id),
-    INDEX idx_historial_fecha (fecha_cambio),
-    INDEX idx_historial_tipo (tipo_cambio)
+    UNIQUE KEY uk_producto_talla (producto_id, talla),
+    INDEX idx_producto_tallas_stock (stock)
 );
 
--- Tabla: cupones (Sistema de cupones de descuento)
+-- Tabla: usuarios
+CREATE TABLE IF NOT EXISTS usuarios (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    email VARCHAR(150) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    telefono VARCHAR(20),
+    fecha_nacimiento DATE,
+    rol ENUM('CLIENTE', 'ADMIN', 'EMPLEADO') DEFAULT 'CLIENTE',
+    activo BOOLEAN DEFAULT TRUE,
+    verificado BOOLEAN DEFAULT FALSE,
+    codigo_verificacion VARCHAR(100),
+    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    ultima_sesion TIMESTAMP NULL,
+    
+    INDEX idx_usuarios_email (email),
+    INDEX idx_usuarios_rol (rol),
+    INDEX idx_usuarios_activo (activo)
+);
+
+-- Tabla: pedidos
+CREATE TABLE IF NOT EXISTS pedidos (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    numero_pedido VARCHAR(50) UNIQUE NOT NULL,
+    usuario_id BIGINT NOT NULL,
+    subtotal DECIMAL(10,2) NOT NULL CHECK (subtotal >= 0),
+    envio DECIMAL(10,2) DEFAULT 0 CHECK (envio >= 0),
+    descuento_cupon DECIMAL(10,2) DEFAULT 0,
+    total DECIMAL(10,2) NOT NULL CHECK (total >= 0),
+    estado ENUM('PENDIENTE', 'CONFIRMADO', 'PREPARACION', 'ENVIADO', 'ENTREGADO', 'CANCELADO') DEFAULT 'PENDIENTE',
+    metodo_pago ENUM('TARJETA', 'PAYPAL', 'TRANSFERENCIA', 'EFECTIVO') NOT NULL,
+    metodo_envio VARCHAR(50) NOT NULL,
+    estado_pago ENUM('PENDIENTE', 'COMPLETADO', 'FALLIDO', 'REEMBOLSADO') DEFAULT 'PENDIENTE',
+    cupon_id BIGINT NULL,
+    
+    -- Información de envío
+    nombre_envio VARCHAR(100) NOT NULL,
+    telefono_envio VARCHAR(20) NOT NULL,
+    direccion_envio TEXT NOT NULL,
+    ciudad_envio VARCHAR(100) NOT NULL,
+    codigo_postal VARCHAR(10) NOT NULL,
+    notas TEXT,
+    
+    -- Fechas
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    fecha_confirmacion TIMESTAMP NULL,
+    fecha_envio TIMESTAMP NULL,
+    fecha_entrega TIMESTAMP NULL,
+    
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE,
+    INDEX idx_pedidos_usuario (usuario_id),
+    INDEX idx_pedidos_estado (estado),
+    INDEX idx_pedidos_fecha (fecha_creacion),
+    INDEX idx_pedidos_numero (numero_pedido)
+);
+
+-- Tabla: detalles_pedido
+CREATE TABLE IF NOT EXISTS detalles_pedido (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    pedido_id BIGINT NOT NULL,
+    producto_id BIGINT NOT NULL,
+    cantidad INT NOT NULL CHECK (cantidad > 0),
+    precio DECIMAL(10,2) NOT NULL CHECK (precio >= 0),
+    talla INT CHECK (talla BETWEEN 35 AND 50),
+    
+    FOREIGN KEY (pedido_id) REFERENCES pedidos(id) ON DELETE CASCADE,
+    FOREIGN KEY (producto_id) REFERENCES productos(id) ON DELETE RESTRICT,
+    INDEX idx_detalles_pedido (pedido_id),
+    INDEX idx_detalles_producto (producto_id)
+);
+
+-- Tabla: carrito_compras
+CREATE TABLE IF NOT EXISTS carrito_compras (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    usuario_id BIGINT NOT NULL,
+    producto_id BIGINT NOT NULL,
+    talla INT NOT NULL CHECK (talla BETWEEN 35 AND 50),
+    cantidad INT NOT NULL DEFAULT 1 CHECK (cantidad > 0),
+    fecha_agregado TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE,
+    FOREIGN KEY (producto_id) REFERENCES productos(id) ON DELETE CASCADE,
+    UNIQUE KEY uk_carrito_usuario_producto_talla (usuario_id, producto_id, talla),
+    INDEX idx_carrito_usuario (usuario_id)
+);
+
+-- Tabla: reseñas
+CREATE TABLE IF NOT EXISTS reseñas (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    producto_id BIGINT NOT NULL,
+    usuario_id BIGINT NOT NULL,
+    titulo VARCHAR(200),
+    comentario TEXT,
+    calificacion INT NOT NULL CHECK (calificacion BETWEEN 1 AND 5),
+    activo BOOLEAN DEFAULT TRUE,
+    aprobado BOOLEAN DEFAULT FALSE,
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (producto_id) REFERENCES productos(id) ON DELETE CASCADE,
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE,
+    UNIQUE KEY uk_resena_usuario_producto (usuario_id, producto_id),
+    INDEX idx_resenas_producto (producto_id),
+    INDEX idx_resenas_aprobado (aprobado),
+    INDEX idx_resenas_calificacion (calificacion)
+);
+
+-- =============================================
+-- INSERTAR CATEGORÍAS
+-- =============================================
+
+INSERT INTO categorias (nombre, descripcion, imagen_url, slug, meta_titulo, meta_descripcion) VALUES
+('Deportivas', 'Zapatillas para running, entrenamiento y deportes', 'deportivos.jpeg', 'deportivas', 'Zapatillas Deportivas | StepUp Shoes', 'Encuentra las mejores zapatillas deportivas para running, entrenamiento y todos los deportes. Calidad y comodidad garantizadas.'),
+('Casual', 'Zapatillas y calzado para uso diario y estilo urbano', 'casual.jpeg', 'casual', 'Calzado Casual | StepUp Shoes', 'Descubre nuestra colección de calzado casual para hombre y mujer. Estilo, comodidad y tendencias urbanas.'),
+('Formal', 'Zapatos formales para oficina y eventos especiales', 'formal.jpeg', 'formal', 'Zapatos Formales | StepUp Shoes', 'Elige entre nuestra selección de zapatos formales para hombre. Elegancia, calidad y confort para tu día a día.'),
+('Crocs', 'Calzado cómodo y versátil para toda la familia', 'crocs_classic.png', 'crocs', 'Crocs | StepUp Shoes', 'Los famosos Crocs en todos los modelos y colores. Comodidad extrema para toda la familia.'),
+('Skechers', 'Calzado deportivo-casual con tecnología de confort', 'skechers_go_walk.jpeg', 'skechers', 'Skechers | StepUp Shoes', 'Skechers: tecnología de confort para caminar todo el día. Ligereza y amortiguación premium.'),
+('Basketball', 'Zapatillas de baloncesto de alto rendimiento', 'basketball.jpeg', 'basketball', 'Zapatillas Basketball | StepUp Shoes', 'Zapatillas de basketball profesional y casual. Tecnología de salto y agarre superior.');
+
+-- =============================================
+-- INSERTAR PRODUCTOS (CON IMÁGENES QUE SÍ EXISTEN EN FIREBASE)
+-- =============================================
+
+INSERT INTO productos (nombre, descripcion, precio, precio_original, stock, imagen_url, destacado, activo, categoria_id, slug, meta_titulo, meta_descripcion) VALUES
+('Nike Air Max 270', 'Zapatillas deportivas con tecnología Air Max para máxima comodidad y amortiguación. Perfectas para el día a día y actividades deportivas. Materiales transpirables y suela durable.', 129.99, 149.99, 25, 'running.jpeg', 1, 1, 1, 'nike-air-max-270', 'Nike Air Max 270 | StepUp Shoes', 'Zapatillas Nike Air Max 270 con tecnología de amortiguación Air Max. Perfectas para deporte y uso diario.'),
+('Adidas Ultraboost 22', 'Zapatillas de running con tecnología Boost para una amortiguación responsive. Ideales para corredores que buscan comodidad y rendimiento. Diseño ergonómico y soporte superior.', 179.99, NULL, 30, 'adidas_ultraboost.jpeg', 1, 1, 1, 'adidas-ultraboost-22', 'Adidas Ultraboost 22 | StepUp Shoes', 'Adidas Ultraboost 22 con tecnología Boost. Amortiguación responsive para runners exigentes.'),
+('Nike Revolution 6', 'Zapatillas de running con espuma suave para una pisada cómoda. Diseño transpirable y ligero para carreras diarias. Perfectas para entrenamientos y uso casual.', 79.99, 89.99, 40, 'running.jpeg', 0, 1, 1, 'nike-revolution-6', 'Nike Revolution 6 | StepUp Shoes', 'Nike Revolution 6: espuma suave y diseño ligero para running diario.'),
+('Adidas Stan Smith', 'Clásicas zapatillas casuales de cuero blanco con detalles verdes. Diseño timeless que combina con cualquier outfit. Versátiles y cómodas para todo momento.', 89.99, 99.99, 35, 'adidas_stan_smith.jpeg', 1, 1, 2, 'adidas-stan-smith', 'Adidas Stan Smith | StepUp Shoes', 'Adidas Stan Smith clásicas. Cuero blanco con detalles verdes. Icono del estilo casual.'),
+('Vans Old Skool', 'Zapatillas skate clásicas con la icónica raya lateral. Duraderas y versátiles para el estilo urbano. Suela de caucho para mejor tracción.', 69.99, NULL, 50, 'vans_old_skool.jpeg', 0, 1, 2, 'vans-old-skool', 'Vans Old Skool | StepUp Shoes', 'Vans Old Skool: el clásico del skate. Raya lateral icónica y durabilidad extrema.'),
+('Converse Chuck Taylor All Star', 'Iconicas zapatillas de lona alta, perfectas para cualquier ocasión. Un clásico del calzado casual. Diseño versátil que nunca pasa de moda.', 64.99, 74.99, 45, 'casual.jpeg', 1, 1, 2, 'converse-chuck-taylor', 'Converse Chuck Taylor | StepUp Shoes', 'Converse Chuck Taylor All Star. El clásico de lona alta para estilo urbano.'),
+('Clarks Desert Boot', 'Botas desert clásicas en suede, perfectas para looks casual-elegantes. Comodidad y estilo en un solo zapato. Ideal para oficina y eventos.', 149.99, NULL, 20, 'clarks_desert.png', 0, 1, 3, 'clarks-desert-boot', 'Clarks Desert Boot | StepUp Shoes', 'Clarks Desert Boot en suede. Botas casual-elegantes para hombre.'),
+('Dr. Martens 1460', 'Botas clásicas de cuero con suela air-cushioned. Duraderas, cómodas y con un estilo único. Icono de la moda alternativa.', 189.99, 199.99, 15, 'dr_martens.png', 1, 1, 3, 'dr-martens-1460', 'Dr. Martens 1460 | StepUp Shoes', 'Dr. Martens 1460: botas de cuero con suela air-cushioned. Icono de estilo.'),
+('Nike Air Jordan 1', 'Zapatillas de basketball legendarias que revolucionaron el calzado deportivo. Icono de la cultura urbana. Diseño clásico con tecnología moderna.', 169.99, 189.99, 10, 'basketball.jpeg', 1, 1, 6, 'nike-air-jordan-1', 'Nike Air Jordan 1 | StepUp Shoes', 'Nike Air Jordan 1: las legendarias zapatillas de basketball. Icono cultural.'),
+('Adidas Harden Vol. 6', 'Zapatillas de basketball de alto rendimiento diseñadas para James Harden. Tecnología Lightstrike para máxima velocidad y respuesta.', 139.99, NULL, 18, 'basketball.jpeg', 0, 1, 6, 'adidas-harden-vol6', 'Adidas Harden Vol. 6 | StepUp Shoes', 'Adidas Harden Vol. 6: tecnología Lightstrike para basketball de élite.');
+
+-- =============================================
+-- INSERTAR TALLAS PARA PRODUCTOS
+-- =============================================
+
+-- Insertar tallas para todos los productos
+INSERT INTO producto_tallas (producto_id, talla, stock) VALUES
+-- Producto 1: Nike Air Max 270
+(1, 38, 5), (1, 39, 5), (1, 40, 5), (1, 41, 5), (1, 42, 5),
+-- Producto 2: Adidas Ultraboost 22
+(2, 39, 6), (2, 40, 6), (2, 41, 6), (2, 42, 6), (2, 43, 6),
+-- Producto 3: Nike Revolution 6
+(3, 38, 8), (3, 39, 8), (3, 40, 8), (3, 41, 8), (3, 42, 8),
+-- Producto 4: Adidas Stan Smith
+(4, 39, 7), (4, 40, 7), (4, 41, 7), (4, 42, 7), (4, 43, 7),
+-- Producto 5: Vans Old Skool
+(5, 38, 10), (5, 39, 10), (5, 40, 10), (5, 41, 10), (5, 42, 10),
+-- Producto 6: Converse Chuck Taylor
+(6, 39, 9), (6, 40, 9), (6, 41, 9), (6, 42, 9), (6, 43, 9),
+-- Producto 7: Clarks Desert Boot
+(7, 40, 4), (7, 41, 4), (7, 42, 4), (7, 43, 4), (7, 44, 4),
+-- Producto 8: Dr. Martens 1460
+(8, 41, 3), (8, 42, 3), (8, 43, 3), (8, 44, 3), (8, 45, 3),
+-- Producto 9: Nike Air Jordan 1
+(9, 40, 2), (9, 41, 2), (9, 42, 2), (9, 43, 2), (9, 44, 2),
+-- Producto 10: Adidas Harden Vol. 6
+(10, 41, 4), (10, 42, 4), (10, 43, 4), (10, 44, 4), (10, 45, 4);
+
+-- Actualizar stock total en productos
+UPDATE productos p SET p.stock = (
+    SELECT SUM(pt.stock) FROM producto_tallas pt WHERE pt.producto_id = p.id
+);
+
+-- =============================================
+-- INSERTAR USUARIOS
+-- =============================================
+
+INSERT INTO usuarios (nombre, email, password, telefono, fecha_nacimiento, rol, activo, verificado) VALUES
+('Admin Principal', 'admin@stepupshoes.com', '$2a$10$YourHashedPasswordHere', '555-1234', '1990-01-01', 'ADMIN', 1, 1),
+('Juan Pérez', 'juan.perez@email.com', '$2a$10$YourHashedPasswordHere', '555-5678', '1992-05-15', 'CLIENTE', 1, 1),
+('María García', 'maria.garcia@email.com', '$2a$10$YourHashedPasswordHere', '555-9012', '1988-08-22', 'CLIENTE', 1, 1),
+('Carlos López', 'carlos.lopez@email.com', '$2a$10$YourHashedPasswordHere', '555-3456', '1995-03-30', 'CLIENTE', 1, 0);
+
+-- =============================================
+-- TABLAS ADICIONALES (simplificadas)
+-- =============================================
+
+-- Tabla: cupones
 CREATE TABLE IF NOT EXISTS cupones (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     codigo VARCHAR(50) UNIQUE NOT NULL,
@@ -55,198 +281,35 @@ CREATE TABLE IF NOT EXISTS cupones (
     fecha_inicio DATETIME NOT NULL,
     fecha_fin DATETIME NOT NULL,
     activo BOOLEAN DEFAULT TRUE,
-    solo_primer_pedido BOOLEAN DEFAULT FALSE,
-    productos_aplicables JSON, -- NULL para todos, o array de product_ids
-    categorias_aplicables JSON, -- NULL para todas, o array de categoria_ids
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     
     INDEX idx_cupones_activo (activo),
-    INDEX idx_cupones_fechas (fecha_inicio, fecha_fin),
-    INDEX idx_cupones_codigo (codigo),
-    INDEX idx_cupones_tipo (tipo)
+    INDEX idx_cupones_fechas (fecha_inicio, fecha_fin)
 );
 
--- Tabla: cupones_usados (Registro de cupones utilizados)
-CREATE TABLE IF NOT EXISTS cupones_usados (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    cupon_id BIGINT NOT NULL,
-    usuario_id BIGINT NOT NULL,
-    pedido_id BIGINT NOT NULL,
-    descuento_aplicado DECIMAL(10,2) NOT NULL,
-    fecha_uso TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    
-    FOREIGN KEY (cupon_id) REFERENCES cupones(id) ON DELETE RESTRICT,
-    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE,
-    FOREIGN KEY (pedido_id) REFERENCES pedidos(id) ON DELETE CASCADE,
-    UNIQUE KEY uk_cupon_pedido (cupon_id, pedido_id),
-    INDEX idx_cupones_usados_usuario (usuario_id),
-    INDEX idx_cupones_usados_fecha (fecha_uso)
-);
-
--- Tabla: wishlist (Lista de deseos de usuarios)
-CREATE TABLE IF NOT EXISTS wishlist (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    usuario_id BIGINT NOT NULL,
-    producto_id BIGINT NOT NULL,
-    fecha_agregado TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    notas TEXT,
-    
-    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE,
-    FOREIGN KEY (producto_id) REFERENCES productos(id) ON DELETE CASCADE,
-    UNIQUE KEY uk_wishlist_usuario_producto (usuario_id, producto_id),
-    INDEX idx_wishlist_usuario (usuario_id),
-    INDEX idx_wishlist_fecha (fecha_agregado)
-);
-
--- Tabla: notificaciones (Sistema de notificaciones)
-CREATE TABLE IF NOT EXISTS notificaciones (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    usuario_id BIGINT NOT NULL,
-    titulo VARCHAR(200) NOT NULL,
-    mensaje TEXT NOT NULL,
-    tipo ENUM('PEDIDO', 'PROMOCION', 'SISTEMA', 'STOCK', 'SEGURIDAD') NOT NULL,
-    leida BOOLEAN DEFAULT FALSE,
-    url_accion VARCHAR(500),
-    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    fecha_leida TIMESTAMP NULL,
-    
-    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE,
-    INDEX idx_notificaciones_usuario (usuario_id),
-    INDEX idx_notificaciones_leida (leida),
-    INDEX idx_notificaciones_tipo (tipo),
-    INDEX idx_notificaciones_fecha (fecha_creacion)
-);
-
--- Tabla: inventario_movimientos (Control detallado de inventario)
-CREATE TABLE IF NOT EXISTS inventario_movimientos (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    producto_id BIGINT NOT NULL,
-    talla INT NOT NULL CHECK (talla BETWEEN 35 AND 50),
-    tipo_movimiento ENUM('ENTRADA', 'SALIDA', 'AJUSTE', 'DEVOLUCION') NOT NULL,
-    cantidad INT NOT NULL,
-    stock_anterior INT NOT NULL,
-    stock_nuevo INT NOT NULL,
-    referencia VARCHAR(100), -- pedido_id, ajuste_id, etc.
-    motivo VARCHAR(200),
-    usuario_id BIGINT,
-    fecha_movimiento TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    
-    FOREIGN KEY (producto_id) REFERENCES productos(id) ON DELETE CASCADE,
-    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE SET NULL,
-    INDEX idx_inventario_producto (producto_id),
-    INDEX idx_inventario_fecha (fecha_movimiento),
-    INDEX idx_inventario_tipo (tipo_movimiento),
-    INDEX idx_inventario_referencia (referencia)
-);
-
--- Tabla: pagos (Información detallada de pagos)
-CREATE TABLE IF NOT EXISTS pagos (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    pedido_id BIGINT NOT NULL,
-    metodo_pago ENUM('TARJETA', 'PAYPAL', 'TRANSFERENCIA', 'EFECTIVO') NOT NULL,
-    estado ENUM('PENDIENTE', 'COMPLETADO', 'FALLIDO', 'REEMBOLSADO', 'CANCELADO') NOT NULL,
-    monto DECIMAL(10,2) NOT NULL,
-    transaccion_id VARCHAR(100) UNIQUE,
-    datos_transaccion JSON, -- Respuesta completa del gateway de pago
-    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    fecha_completado TIMESTAMP NULL,
-    
-    FOREIGN KEY (pedido_id) REFERENCES pedidos(id) ON DELETE CASCADE,
-    INDEX idx_pagos_pedido (pedido_id),
-    INDEX idx_pagos_estado (estado),
-    INDEX idx_pagos_transaccion (transaccion_id),
-    INDEX idx_pagos_fecha (fecha_creacion)
-);
-
--- Tabla: envios (Seguimiento detallado de envíos)
-CREATE TABLE IF NOT EXISTS envios (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    pedido_id BIGINT NOT NULL,
-    metodo_envio VARCHAR(50) NOT NULL,
-    costo_envio DECIMAL(10,2) NOT NULL,
-    transportista VARCHAR(100),
-    numero_guia VARCHAR(100),
-    url_seguimiento VARCHAR(500),
-    estado ENUM('PREPARACION', 'ENVIADO', 'EN_TRANSITO', 'ENTREGADO', 'DEVUELTO') NOT NULL,
-    fecha_estimada_entrega DATE,
-    fecha_envio TIMESTAMP NULL,
-    fecha_entrega TIMESTAMP NULL,
-    direccion_envio JSON, -- Almacena toda la dirección en formato JSON
-    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    
-    FOREIGN KEY (pedido_id) REFERENCES pedidos(id) ON DELETE CASCADE,
-    UNIQUE KEY uk_envio_pedido (pedido_id),
-    INDEX idx_envios_estado (estado),
-    INDEX idx_envios_fecha_estimada (fecha_estimada_entrega),
-    INDEX idx_envios_guia (numero_guia)
-);
+-- Insertar cupones de ejemplo
+INSERT INTO cupones (codigo, descripcion, tipo, valor, max_descuento, min_compra, usos_maximos, fecha_inicio, fecha_fin) VALUES
+('BIENVENIDA10', '10% de descuento en tu primera compra', 'PORCENTAJE', 10, 20, 50, 100, NOW(), DATE_ADD(NOW(), INTERVAL 30 DAY)),
+('VERANO25', '25% de descuento en productos de verano', 'PORCENTAJE', 25, 50, 100, NULL, NOW(), DATE_ADD(NOW(), INTERVAL 60 DAY));
 
 -- =============================================
--- MODIFICACIONES A TABLAS EXISTENTES
+-- VISTAS ÚTILES
 -- =============================================
 
--- Agregar columna para cupones en pedidos
-ALTER TABLE pedidos 
-ADD COLUMN cupon_id BIGINT NULL AFTER metodo_envio,
-ADD COLUMN descuento_cupon DECIMAL(10,2) DEFAULT 0 AFTER cupon_id,
-ADD CONSTRAINT fk_pedido_cupon 
-    FOREIGN KEY (cupon_id) REFERENCES cupones(id) ON DELETE SET NULL;
-
--- Agregar columna para valoraciones promedio en productos
-ALTER TABLE productos 
-ADD COLUMN valoracion_promedio DECIMAL(3,2) DEFAULT 0.00 AFTER stock,
-ADD COLUMN total_valoraciones INT DEFAULT 0 AFTER valoracion_promedio,
-ADD INDEX idx_productos_valoracion (valoracion_promedio);
-
--- Agregar columna para productos relacionados
-ALTER TABLE productos 
-ADD COLUMN productos_relacionados JSON AFTER total_valoraciones;
-
--- Agregar columna para metadatos SEO
-ALTER TABLE productos 
-ADD COLUMN meta_titulo VARCHAR(200) AFTER productos_relacionados,
-ADD COLUMN meta_descripcion TEXT AFTER meta_titulo,
-ADD COLUMN slug VARCHAR(200) UNIQUE AFTER meta_descripcion;
-
-ALTER TABLE categorias 
-ADD COLUMN meta_titulo VARCHAR(200) AFTER activo,
-ADD COLUMN meta_descripcion TEXT AFTER meta_titulo,
-ADD COLUMN slug VARCHAR(100) UNIQUE AFTER meta_descripcion;
-
--- Agregar columna para peso y dimensiones de productos
-ALTER TABLE productos 
-ADD COLUMN peso_kg DECIMAL(5,2) AFTER slug,
-ADD COLUMN largo_cm DECIMAL(5,2) AFTER peso_kg,
-ADD COLUMN ancho_cm DECIMAL(5,2) AFTER largo_cm,
-ADD COLUMN alto_cm DECIMAL(5,2) AFTER ancho_cm;
-
--- =============================================
--- NUEVAS VISTAS
--- =============================================
-
--- Vista: productos con imágenes múltiples
+-- Vista: productos con información completa
 CREATE OR REPLACE VIEW vista_productos_completa AS
 SELECT 
     p.*,
     c.nombre as categoria_nombre,
     c.slug as categoria_slug,
-    GROUP_CONCAT(DISTINCT pt.talla ORDER BY pt.talla) as tallas_disponibles,
-    GROUP_CONCAT(DISTINCT pi.imagen_url ORDER BY pi.orden, pi.es_principal DESC) as imagenes,
-    (SELECT imagen_url FROM producto_imagenes WHERE producto_id = p.id AND es_principal = TRUE LIMIT 1) as imagen_principal,
-    COUNT(DISTINCT r.id) as total_resenas,
-    p.valoracion_promedio
+    GROUP_CONCAT(DISTINCT pt.talla ORDER BY pt.talla) as tallas_disponibles
 FROM productos p
 INNER JOIN categorias c ON p.categoria_id = c.id
 LEFT JOIN producto_tallas pt ON p.id = pt.producto_id AND pt.stock > 0
-LEFT JOIN producto_imagenes pi ON p.id = pi.producto_id
-LEFT JOIN reseñas r ON p.id = r.producto_id AND r.activo = TRUE AND r.aprobado = TRUE
 WHERE p.activo = TRUE AND c.activo = TRUE
 GROUP BY p.id, c.nombre, c.slug;
 
--- Vista: carrito con información completa
+-- Vista: carrito con información
 CREATE OR REPLACE VIEW vista_carrito_completo AS
 SELECT 
     c.id,
@@ -257,550 +320,48 @@ SELECT
     c.fecha_agregado,
     p.nombre as producto_nombre,
     p.precio as producto_precio,
-    p.precio_original as producto_precio_original,
     p.imagen_url as producto_imagen,
     p.stock as producto_stock,
-    p.peso_kg as producto_peso,
-    pt.stock as talla_stock,
     (p.precio * c.cantidad) as subtotal,
-    CASE 
-        WHEN p.precio_original IS NOT NULL THEN (p.precio_original - p.precio) * c.cantidad
-        ELSE 0
-    END as ahorro_total,
-    c.cantidad <= pt.stock as stock_suficiente
+    c.cantidad <= COALESCE(pt.stock, 0) as stock_suficiente
 FROM carrito_compras c
 INNER JOIN productos p ON c.producto_id = p.id
 LEFT JOIN producto_tallas pt ON c.producto_id = pt.producto_id AND c.talla = pt.talla
 WHERE p.activo = TRUE;
 
--- Vista: pedidos con información extendida
-CREATE OR REPLACE VIEW vista_pedidos_completa AS
-SELECT 
-    p.id,
-    p.numero_pedido,
-    p.usuario_id,
-    u.nombre as usuario_nombre,
-    u.email as usuario_email,
-    p.total,
-    p.subtotal,
-    p.envio,
-    p.descuento_cupon,
-    p.estado,
-    p.metodo_pago,
-    p.metodo_envio,
-    p.estado_pago,
-    c.codigo as cupon_codigo,
-    e.numero_guia,
-    e.estado as estado_envio,
-    e.fecha_estimada_entrega,
-    p.fecha_creacion,
-    p.fecha_confirmacion,
-    p.fecha_envio,
-    p.fecha_entrega,
-    COUNT(DISTINCT d.id) as total_items,
-    SUM(d.cantidad) as total_productos,
-    DATEDIFF(COALESCE(p.fecha_entrega, NOW()), p.fecha_creacion) as dias_entrega
-FROM pedidos p
-INNER JOIN usuarios u ON p.usuario_id = u.id
-LEFT JOIN detalles_pedido d ON p.id = d.pedido_id
-LEFT JOIN cupones c ON p.cupon_id = c.id
-LEFT JOIN envios e ON p.id = e.pedido_id
-GROUP BY p.id, p.numero_pedido, p.usuario_id, u.nombre, u.email, p.total, p.subtotal, p.envio, 
-         p.descuento_cupon, p.estado, p.metodo_pago, p.metodo_envio, p.estado_pago, c.codigo,
-         e.numero_guia, e.estado, e.fecha_estimada_entrega, p.fecha_creacion, p.fecha_confirmacion,
-         p.fecha_envio, p.fecha_entrega;
+-- =============================================
+-- VERIFICACIÓN FINAL
+-- =============================================
 
--- Vista: análisis de ventas
-CREATE OR REPLACE VIEW vista_analisis_ventas AS
+SELECT '=============================================' as '';
+SELECT 'BASE DE DATOS COMPLETA CREADA EXITOSAMENTE' as '';
+SELECT '=============================================' as '';
+SELECT '' as '';
+SELECT 'RESUMEN:' as '';
+SELECT CONCAT('✅ ', COUNT(*), ' categorías insertadas') as '' FROM categorias;
+SELECT CONCAT('✅ ', COUNT(*), ' productos insertados') as '' FROM productos;
+SELECT CONCAT('✅ ', COUNT(*), ' tallas configuradas') as '' FROM producto_tallas;
+SELECT CONCAT('✅ ', COUNT(*), ' usuarios creados') as '' FROM usuarios;
+SELECT CONCAT('✅ ', COUNT(*), ' cupones disponibles') as '' FROM cupones;
+SELECT '' as '';
+SELECT '=============================================' as '';
+SELECT 'IMPORTANTE PARA FIREBASE:' as '';
+SELECT '=============================================' as '';
+SELECT 'Todas las imágenes en la BD usan solo NOMBRES de archivo' as '';
+SELECT 'que COINCIDEN EXACTAMENTE con lo que tienes en Firebase Storage' as '';
+SELECT '' as '';
+SELECT 'Ejemplos de URLs que se generarán:' as '';
+SELECT '' as '';
 SELECT 
-    DATE(p.fecha_creacion) as fecha,
-    COUNT(*) as total_pedidos,
-    SUM(p.total) as total_ventas,
-    AVG(p.total) as promedio_venta,
-    COUNT(DISTINCT p.usuario_id) as clientes_unicos,
-    SUM(d.cantidad) as total_productos_vendidos,
-    SUM(CASE WHEN p.estado = 'ENTREGADO' THEN 1 ELSE 0 END) as pedidos_entregados,
-    SUM(CASE WHEN p.estado = 'CANCELADO' THEN 1 ELSE 0 END) as pedidos_cancelados
-FROM pedidos p
-LEFT JOIN detalles_pedido d ON p.id = d.pedido_id
-GROUP BY DATE(p.fecha_creacion);
-
--- Vista: productos más vendidos
-CREATE OR REPLACE VIEW vista_productos_populares AS
-SELECT 
-    p.id,
-    p.nombre,
-    p.precio,
-    p.imagen_url,
-    c.nombre as categoria_nombre,
-    SUM(d.cantidad) as total_vendido,
-    COUNT(DISTINCT d.pedido_id) as total_pedidos,
-    AVG(r.calificacion) as valoracion_promedio,
-    COUNT(DISTINCT r.id) as total_resenas,
-    p.stock
+    CONCAT('https://firebasestorage.googleapis.com/v0/b/stepup-shoes-3fbfb.appspot.com/o/productos%2F', 
+           p.imagen_url, '?alt=media') as 'URL Firebase'
 FROM productos p
-INNER JOIN categorias c ON p.categoria_id = c.id
-LEFT JOIN detalles_pedido d ON p.id = d.producto_id
-LEFT JOIN reseñas r ON p.id = r.producto_id AND r.activo = TRUE AND r.aprobado = TRUE
-WHERE p.activo = TRUE
-GROUP BY p.id, p.nombre, p.precio, p.imagen_url, c.nombre, p.stock
-ORDER BY total_vendido DESC;
-
--- =============================================
--- NUEVOS PROCEDIMIENTOS ALMACENADOS
--- =============================================
-
-DELIMITER //
-
--- Procedimiento: Aplicar cupón a un pedido
-CREATE PROCEDURE sp_aplicar_cupon(
-    IN p_pedido_id BIGINT,
-    IN p_codigo_cupon VARCHAR(50),
-    OUT p_descuento DECIMAL(10,2),
-    OUT p_mensaje VARCHAR(200)
-)
-BEGIN
-    DECLARE v_cupon_id BIGINT;
-    DECLARE v_tipo_cupon ENUM('PORCENTAJE', 'MONTO_FIJO', 'ENVIO_GRATIS');
-    DECLARE v_valor_cupon DECIMAL(10,2);
-    DECLARE v_max_descuento DECIMAL(10,2);
-    DECLARE v_min_compra DECIMAL(10,2);
-    DECLARE v_usos_maximos INT;
-    DECLARE v_usos_actuales INT;
-    DECLARE v_subtotal_pedido DECIMAL(10,2);
-    DECLARE v_envio_pedido DECIMAL(10,2);
-    DECLARE v_usuario_id BIGINT;
-    DECLARE v_es_primer_pedido BOOLEAN;
-    
-    -- Obtener información del cupón
-    SELECT id, tipo, valor, max_descuento, min_compra, usos_maximos, usos_actuales, solo_primer_pedido
-    INTO v_cupon_id, v_tipo_cupon, v_valor_cupon, v_max_descuento, v_min_compra, v_usos_maximos, v_usos_actuales, v_es_primer_pedido
-    FROM cupones 
-    WHERE codigo = p_codigo_cupon 
-    AND activo = TRUE 
-    AND fecha_inicio <= NOW() 
-    AND fecha_fin >= NOW();
-    
-    -- Obtener información del pedido
-    SELECT subtotal, envio, usuario_id 
-    INTO v_subtotal_pedido, v_envio_pedido, v_usuario_id
-    FROM pedidos 
-    WHERE id = p_pedido_id;
-    
-    -- Validaciones
-    IF v_cupon_id IS NULL THEN
-        SET p_descuento = 0;
-        SET p_mensaje = 'Cupón no válido o expirado';
-    ELSEIF v_usos_maximos IS NOT NULL AND v_usos_actuales >= v_usos_maximos THEN
-        SET p_descuento = 0;
-        SET p_mensaje = 'Cupón ya no está disponible';
-    ELSEIF v_min_compra > v_subtotal_pedido THEN
-        SET p_descuento = 0;
-        SET p_mensaje = CONCAT('Mínimo de compra: $', v_min_compra);
-    ELSEIF v_es_primer_pedido AND EXISTS(SELECT 1 FROM pedidos WHERE usuario_id = v_usuario_id AND id != p_pedido_id) THEN
-        SET p_descuento = 0;
-        SET p_mensaje = 'Cupón solo válido para primer pedido';
-    ELSE
-        -- Calcular descuento según tipo
-        CASE v_tipo_cupon
-            WHEN 'PORCENTAJE' THEN
-                SET p_descuento = (v_subtotal_pedido * v_valor_cupon) / 100;
-                IF v_max_descuento IS NOT NULL AND p_descuento > v_max_descuento THEN
-                    SET p_descuento = v_max_descuento;
-                END IF;
-            WHEN 'MONTO_FIJO' THEN
-                SET p_descuento = LEAST(v_valor_cupon, v_subtotal_pedido);
-            WHEN 'ENVIO_GRATIS' THEN
-                SET p_descuento = v_envio_pedido;
-            ELSE
-                SET p_descuento = 0;
-        END CASE;
-        
-        -- Actualizar pedido
-        UPDATE pedidos 
-        SET cupon_id = v_cupon_id, 
-            descuento_cupon = p_descuento,
-            total = subtotal + envio - p_descuento
-        WHERE id = p_pedido_id;
-        
-        -- Incrementar usos del cupón
-        UPDATE cupones 
-        SET usos_actuales = usos_actuales + 1 
-        WHERE id = v_cupon_id;
-        
-        SET p_mensaje = 'Cupón aplicado correctamente';
-    END IF;
-END //
-
--- Procedimiento: Actualizar valoraciones de producto
-CREATE PROCEDURE sp_actualizar_valoraciones_producto(IN p_producto_id BIGINT)
-BEGIN
-    DECLARE v_promedio DECIMAL(3,2);
-    DECLARE v_total INT;
-    
-    SELECT AVG(calificacion), COUNT(*)
-    INTO v_promedio, v_total
-    FROM reseñas 
-    WHERE producto_id = p_producto_id 
-    AND activo = TRUE 
-    AND aprobado = TRUE;
-    
-    UPDATE productos 
-    SET valoracion_promedio = COALESCE(v_promedio, 0),
-        total_valoraciones = COALESCE(v_total, 0)
-    WHERE id = p_producto_id;
-END //
-
--- Procedimiento: Generar reporte de inventario
-CREATE PROCEDURE sp_reporte_inventario(IN p_categoria_id BIGINT)
-BEGIN
-    SELECT 
-        p.id,
-        p.nombre,
-        c.nombre as categoria,
-        p.stock as stock_total,
-        GROUP_CONCAT(CONCAT(pt.talla, ':', pt.stock) ORDER BY pt.talla) as stock_por_talla,
-        SUM(pt.stock) as stock_tallas,
-        COUNT(DISTINCT pt.talla) as tallas_disponibles,
-        p.precio,
-        CASE 
-            WHEN p.stock = 0 THEN 'AGOTADO'
-            WHEN p.stock <= 5 THEN 'STOCK_BAJO'
-            ELSE 'STOCK_NORMAL'
-        END as estado_stock
-    FROM productos p
-    INNER JOIN categorias c ON p.categoria_id = c.id
-    LEFT JOIN producto_tallas pt ON p.id = pt.producto_id
-    WHERE p.activo = TRUE
-    AND (p_categoria_id IS NULL OR p.categoria_id = p_categoria_id)
-    GROUP BY p.id, p.nombre, c.nombre, p.stock, p.precio
-    ORDER BY p.stock ASC, p.nombre ASC;
-END //
-
--- Procedimiento: Procesar reabastecimiento de inventario
-CREATE PROCEDURE sp_procesar_reabastecimiento(
-    IN p_producto_id BIGINT,
-    IN p_talla INT,
-    IN p_cantidad INT,
-    IN p_usuario_id BIGINT,
-    IN p_motivo VARCHAR(200)
-)
-BEGIN
-    DECLARE v_stock_actual INT;
-    DECLARE v_nuevo_stock INT;
-    
-    -- Obtener stock actual
-    SELECT stock INTO v_stock_actual
-    FROM producto_tallas
-    WHERE producto_id = p_producto_id AND talla = p_talla;
-    
-    -- Si no existe, crear registro
-    IF v_stock_actual IS NULL THEN
-        INSERT INTO producto_tallas (producto_id, talla, stock)
-        VALUES (p_producto_id, p_talla, p_cantidad);
-        SET v_stock_actual = 0;
-        SET v_nuevo_stock = p_cantidad;
-    ELSE
-        -- Actualizar stock
-        UPDATE producto_tallas 
-        SET stock = stock + p_cantidad
-        WHERE producto_id = p_producto_id AND talla = p_talla;
-        SET v_nuevo_stock = v_stock_actual + p_cantidad;
-    END IF;
-    
-    -- Registrar movimiento de inventario
-    INSERT INTO inventario_movimientos (
-        producto_id, talla, tipo_movimiento, cantidad, 
-        stock_anterior, stock_nuevo, usuario_id, motivo
-    ) VALUES (
-        p_producto_id, p_talla, 'ENTRADA', p_cantidad,
-        v_stock_actual, v_nuevo_stock, p_usuario_id, p_motivo
-    );
-    
-    -- Actualizar stock general del producto
-    UPDATE productos 
-    SET stock = (
-        SELECT SUM(stock) 
-        FROM producto_tallas 
-        WHERE producto_id = p_producto_id
-    ) 
-    WHERE id = p_producto_id;
-END //
-
--- Procedimiento: Obtener productos recomendados
-CREATE PROCEDURE sp_obtener_recomendaciones(
-    IN p_usuario_id BIGINT,
-    IN p_producto_id BIGINT,
-    IN p_limite INT
-)
-BEGIN
-    -- Recomendaciones basadas en categoría y productos similares
-    SELECT DISTINCT p.*
-    FROM productos p
-    WHERE p.id != p_producto_id
-    AND p.activo = TRUE
-    AND (
-        p.categoria_id = (SELECT categoria_id FROM productos WHERE id = p_producto_id)
-        OR p.id IN (
-            SELECT producto_id 
-            FROM detalles_pedido 
-            WHERE pedido_id IN (
-                SELECT pedido_id 
-                FROM detalles_pedido 
-                WHERE producto_id = p_producto_id
-            )
-            AND producto_id != p_producto_id
-        )
-    )
-    ORDER BY p.destacado DESC, p.valoracion_promedio DESC, p.fecha_creacion DESC
-    LIMIT p_limite;
-END //
-
-DELIMITER ;
-
--- =============================================
--- NUEVOS TRIGGERS
--- =============================================
-
-DELIMITER //
-
--- Trigger: Actualizar valoraciones cuando se modifica una reseña
-CREATE TRIGGER tr_resena_actualizar_valoraciones 
-AFTER INSERT ON reseñas 
-FOR EACH ROW 
-BEGIN
-    CALL sp_actualizar_valoraciones_producto(NEW.producto_id);
-END //
-
-CREATE TRIGGER tr_resena_actualizar_valoraciones_update 
-AFTER UPDATE ON reseñas 
-FOR EACH ROW 
-BEGIN
-    IF OLD.calificacion != NEW.calificacion OR OLD.activo != NEW.activo OR OLD.aprobado != NEW.aprobado THEN
-        CALL sp_actualizar_valoraciones_producto(NEW.producto_id);
-    END IF;
-END //
-
-CREATE TRIGGER tr_resena_actualizar_valoraciones_delete 
-AFTER DELETE ON reseñas 
-FOR EACH ROW 
-BEGIN
-    CALL sp_actualizar_valoraciones_producto(OLD.producto_id);
-END //
-
--- Trigger: Registrar historial de precios
-CREATE TRIGGER tr_producto_historial_precios 
-BEFORE UPDATE ON productos 
-FOR EACH ROW 
-BEGIN
-    IF OLD.precio != NEW.precio THEN
-        INSERT INTO historial_precios (
-            producto_id, precio_anterior, precio_nuevo, tipo_cambio
-        ) VALUES (
-            NEW.id, OLD.precio, NEW.precio, 'ACTUALIZACION'
-        );
-    END IF;
-END //
-
--- Trigger: Validar stock antes de actualizar carrito
-CREATE TRIGGER tr_carrito_actualizar_validar_stock 
-BEFORE UPDATE ON carrito_compras 
-FOR EACH ROW 
-BEGIN
-    DECLARE v_stock_disponible INT;
-    
-    IF NEW.cantidad != OLD.cantidad THEN
-        SELECT stock INTO v_stock_disponible 
-        FROM producto_tallas 
-        WHERE producto_id = NEW.producto_id AND talla = NEW.talla;
-        
-        IF v_stock_disponible IS NULL OR v_stock_disponible < NEW.cantidad THEN
-            SIGNAL SQLSTATE '45000' 
-            SET MESSAGE_TEXT = 'Stock insuficiente para actualizar la cantidad';
-        END IF;
-    END IF;
-END //
-
--- Trigger: Crear notificación para nuevo pedido
-CREATE TRIGGER tr_pedido_crear_notificacion 
-AFTER INSERT ON pedidos 
-FOR EACH ROW 
-BEGIN
-    INSERT INTO notificaciones (
-        usuario_id, titulo, mensaje, tipo, url_accion
-    ) VALUES (
-        NEW.usuario_id,
-        '¡Pedido Confirmado!',
-        CONCAT('Tu pedido #', NEW.numero_pedido, ' ha sido confirmado. Total: $', NEW.total),
-        'PEDIDO',
-        CONCAT('/cuenta/pedidos/', NEW.id)
-    );
-END //
-
-DELIMITER ;
-
--- =============================================
--- DATOS DE PRUEBA PARA NUEVAS TABLAS
--- =============================================
-
--- Insertar imágenes múltiples para productos
-INSERT INTO producto_imagenes (producto_id, imagen_url, orden, es_principal) VALUES
--- Nike Air Max 270
-(1, '/images/productos/nike-air-max-270/1.jpg', 1, TRUE),
-(1, '/images/productos/nike-air-max-270/2.jpg', 2, FALSE),
-(1, '/images/productos/nike-air-max-270/3.jpg', 3, FALSE),
-(1, '/images/productos/nike-air-max-270/4.jpg', 4, FALSE),
-
--- Adidas Ultraboost 22
-(2, '/images/productos/adidas-ultraboost-22/1.jpg', 1, TRUE),
-(2, '/images/productos/adidas-ultraboost-22/2.jpg', 2, FALSE),
-(2, '/images/productos/adidas-ultraboost-22/3.jpg', 3, FALSE),
-
--- Adidas Stan Smith
-(4, '/images/productos/adidas-stan-smith/1.jpg', 1, TRUE),
-(4, '/images/productos/adidas-stan-smith/2.jpg', 2, FALSE),
-
--- Vans Old Skool
-(5, '/images/productos/vans-old-skool/1.jpg', 1, TRUE),
-(5, '/images/productos/vans-old-skool/2.jpg', 2, FALSE),
-(5, '/images/productos/vans-old-skool/3.jpg', 3, FALSE);
-
--- Insertar cupones de prueba
-INSERT INTO cupones (codigo, descripcion, tipo, valor, max_descuento, min_compra, usos_maximos, fecha_inicio, fecha_fin) VALUES
-('BIENVENIDA10', '10% de descuento en tu primera compra', 'PORCENTAJE', 10, 20, 50, 100, NOW(), DATE_ADD(NOW(), INTERVAL 30 DAY)),
-('ENVIOGRATIS', 'Envío gratis en cualquier compra', 'ENVIO_GRATIS', 0, NULL, 0, 50, NOW(), DATE_ADD(NOW(), INTERVAL 15 DAY)),
-('VERANO25', '25% de descuento en productos de verano', 'PORCENTAJE', 25, 50, 100, NULL, NOW(), DATE_ADD(NOW(), INTERVAL 60 DAY)),
-('COMPRA50', '$50 de descuento en compras mayores a $200', 'MONTO_FIJO', 50, NULL, 200, 25, NOW(), DATE_ADD(NOW(), INTERVAL 45 DAY));
-
--- Insertar productos en wishlist
-INSERT INTO wishlist (usuario_id, producto_id, notas) VALUES
-(2, 1, 'Para cumpleaños'),
-(2, 4, 'Zapatos casuales'),
-(3, 2, 'Para running'),
-(3, 6, 'Estilo clásico');
-
--- Insertar historial de precios de ejemplo
-INSERT INTO historial_precios (producto_id, precio_anterior, precio_nuevo, tipo_cambio, motivo) VALUES
-(1, 149.99, 129.99, 'REBAJA', 'Promoción de lanzamiento'),
-(3, 89.99, 79.99, 'REBAJA', 'Oferta especial'),
-(6, 74.99, 64.99, 'REBAJA', 'Descuento de temporada');
-
--- Actualizar productos con slugs y metadatos
-UPDATE productos SET 
-slug = REPLACE(LOWER(nombre), ' ', '-'),
-meta_titulo = CONCAT(nombre, ' | StepUp Shoes'),
-meta_descripcion = CONCAT('Comprar ', nombre, ' - ', SUBSTRING(descripcion, 1, 150), '...'),
-peso_kg = 0.5,
-largo_cm = 30.0,
-ancho_cm = 10.0,
-alto_cm = 12.0
-WHERE slug IS NULL;
-
-UPDATE categorias SET 
-slug = REPLACE(LOWER(nombre), ' ', '-'),
-meta_titulo = CONCAT(nombre, ' | StepUp Shoes'),
-meta_descripcion = CONCAT('Compra ', nombre, ' de la mejor calidad. ', descripcion)
-WHERE slug IS NULL;
-
--- =============================================
--- ÍNDICES ADICIONALES PARA OPTIMIZACIÓN
--- =============================================
-
--- Índices para búsquedas avanzadas
-CREATE INDEX idx_productos_slug ON productos(slug);
-CREATE INDEX idx_categorias_slug ON categorias(slug);
-CREATE INDEX idx_productos_valoracion_stock ON productos(valoracion_promedio, stock, activo);
-
--- Índices para reportes y analytics
-CREATE INDEX idx_pedidos_fecha_completa ON pedidos(fecha_creacion, estado, total);
-CREATE INDEX idx_detalles_pedido_producto_fecha ON detalles_pedido(producto_id, pedido_id);
-CREATE INDEX idx_resenas_producto_fecha ON reseñas(producto_id, fecha_creacion, aprobado);
-
--- Índices para sistema de cupones
-CREATE INDEX idx_cupones_fecha_activo ON cupones(fecha_inicio, fecha_fin, activo);
-CREATE INDEX idx_cupones_usados_usuario_fecha ON cupones_usados(usuario_id, fecha_uso);
-
--- Índices para inventario
-CREATE INDEX idx_inventario_producto_talla ON inventario_movimientos(producto_id, talla, fecha_movimiento);
-CREATE INDEX idx_producto_tallas_stock ON producto_tallas(stock, producto_id);
-
--- =============================================
--- CONSULTAS DE VERIFICACIÓN FINAL
--- =============================================
-
--- Verificar todas las nuevas tablas
-SELECT 
-    TABLE_NAME as 'Tabla',
-    TABLE_ROWS as 'Registros'
-FROM information_schema.TABLES 
-WHERE TABLE_SCHEMA = 'stepup_shoes'
-ORDER BY TABLE_NAME;
-
--- Verificar vistas creadas
-SELECT 
-    TABLE_NAME as 'Vista'
-FROM information_schema.VIEWS 
-WHERE TABLE_SCHEMA = 'stepup_shoes'
-ORDER BY TABLE_NAME;
-
--- Verificar procedimientos almacenados
-SELECT 
-    ROUTINE_NAME as 'Procedimiento',
-    ROUTINE_TYPE as 'Tipo'
-FROM information_schema.ROUTINES 
-WHERE ROUTINE_SCHEMA = 'stepup_shoes'
-ORDER BY ROUTINE_NAME;
-
--- Mostrar productos con imágenes múltiples
-SELECT 
-    p.nombre,
-    p.slug,
-    COUNT(pi.id) as total_imagenes,
-    p.valoracion_promedio,
-    p.total_valoraciones
-FROM productos p
-LEFT JOIN producto_imagenes pi ON p.id = pi.producto_id
-GROUP BY p.id, p.nombre, p.slug, p.valoracion_promedio, p.total_valoraciones
-ORDER BY p.nombre;
-
--- Mostrar cupones activos
-SELECT 
-    codigo,
-    tipo,
-    valor,
-    fecha_inicio,
-    fecha_fin,
-    usos_actuales,
-    usos_maximos
-FROM cupones 
-WHERE activo = TRUE 
-AND fecha_inicio <= NOW() 
-AND fecha_fin >= NOW()
-ORDER BY fecha_inicio;
-
--- =============================================
--- MENSAJE FINAL DE ACTUALIZACIÓN
--- =============================================
-
+LIMIT 5;
+SELECT '' as '';
 SELECT '=============================================' as '';
-SELECT 'MEJORAS STEPUP SHOES IMPLEMENTADAS EXITOSAMENTE' as '';
-SELECT '=============================================' as '';
-SELECT CONCAT('Nuevas tablas creadas: ', (SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA = 'stepup_shoes') - 12) as '';
-SELECT CONCAT('Nuevas vistas creadas: ', (SELECT COUNT(*) FROM information_schema.VIEWS WHERE TABLE_SCHEMA = 'stepup_shoes') - 3) as '';
-SELECT CONCAT('Nuevos procedimientos: ', (SELECT COUNT(*) FROM information_schema.ROUTINES WHERE ROUTINE_SCHEMA = 'stepup_shoes' AND ROUTINE_TYPE = 'PROCEDURE') - 4) as '';
-SELECT CONCAT('Nuevos triggers: ', (SELECT COUNT(*) FROM information_schema.TRIGGERS WHERE TRIGGER_SCHEMA = 'stepup_shoes') - 3) as '';
-SELECT '=============================================' as '';
-SELECT 'FUNCIONALIDADES AGREGADAS:' as '';
-SELECT '  ✅ Sistema de imágenes múltiples' as '';
-SELECT '  ✅ Historial de precios' as '';
-SELECT '  ✅ Sistema de cupones y descuentos' as '';
-SELECT '  ✅ Lista de deseos (Wishlist)' as '';
-SELECT '  ✅ Sistema de notificaciones' as '';
-SELECT '  ✅ Control detallado de inventario' as '';
-SELECT '  ✅ Seguimiento de envíos avanzado' as '';
-SELECT '  ✅ Sistema de pagos detallado' as '';
-SELECT '  ✅ Metadatos SEO para productos' as '';
-SELECT '  ✅ Valoraciones y reseñas mejoradas' as '';
-SELECT '  ✅ Productos relacionados' as '';
-SELECT '  ✅ Reportes y analytics avanzados' as '';
+SELECT 'NEXT STEPS:' as '';
+SELECT '1. Reinicia la aplicación Spring Boot' as '';
+SELECT '2. Accede a: http://localhost:5001/catalogo' as '';
+SELECT '3. Las imágenes deberían cargarse CORRECTAMENTE' as '';
+SELECT '4. No hay bucles infinitos' as '';
 SELECT '=============================================' as '';

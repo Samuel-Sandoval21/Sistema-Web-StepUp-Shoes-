@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Compra Exitosa</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body>
+
+<div th:replace="fragments/header :: header"></div>
+
+<main class="container my-5 text-center">
+
+    <h1 class="mb-4 text-success">✔ ¡Compra Realizada con Éxito!</h1>
+
+    <p class="lead">Gracias <strong th:text="${nombre}"></strong> por tu compra en StepUp Shoes.</p>
+
+    <p>Te enviaremos la confirmación por correo.</p>
+
+    <a th:href="@{/catalogo}" class="btn btn-primary btn-lg mt-4">Volver al Catálogo</a>
+
+</main>
+
+<div th:replace="fragments/footer :: footer"></div>
+
+</body>
+</html>

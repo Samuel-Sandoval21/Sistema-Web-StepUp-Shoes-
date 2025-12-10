@@ -398,6 +398,38 @@
     </div>
 </div>
 
+    <!-- NAVBAR DE ESCRITORIO (NUEVO) -->
+<nav class="navbar-desktop">
+    <div class="nav-left">
+        <a href="/" class="logo-desktop">
+            <span class="logo-main">StepUp</span><span class="logo-sub">Shoes</span>
+        </a>
+
+        <ul class="nav-links-desktop">
+            <li><a th:href="@{/}">Inicio</a></li>
+            <li><a th:href="@{/catalogo}">Catálogo</a></li>
+            <li><a th:href="@{/promociones}">Promociones</a></li>
+            <li><a th:href="@{/contacto}">Contacto</a></li>
+        </ul>
+    </div>
+
+    <div class="nav-right">
+
+        <!-- BUSCADOR DE ESCRITORIO -->
+        <form class="search-bar-desktop" th:action="@{/catalogo/buscar}" method="get">
+            <input type="text" name="q" placeholder="Buscar productos…" autocomplete="off">
+            <button type="submit">🔍</button>
+        </form>
+
+        <!-- LOGIN -->
+        <a th:href="@{/auth/login}" class="btn-login-desktop">Iniciar Sesión</a>
+
+        <!-- CARRITO -->
+       <a th:href="@{/carrito/ver}" class="btn-carrito-desktop">
+    🛒 (<span id="carritoCountDesktop">0</span>)
+</a>
+    </div>
+</nav>
 <script>
     // Funcionalidad del menú móvil
     function toggleMobileMenu() {
