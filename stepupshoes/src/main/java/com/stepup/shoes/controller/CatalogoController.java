@@ -4,10 +4,8 @@ import com.stepup.shoes.model.Categoria;
 import com.stepup.shoes.model.Producto;
 import com.stepup.shoes.service.CategoriaService;
 import com.stepup.shoes.service.ProductoService;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,6 +31,17 @@ public class CatalogoController {
             Model model) {
 
         List<Producto> productos = aplicarFiltrosYOrdenamiento(categoria, rangoPrecio, orden);
+        
+        // ✅ DEBUG: Mostrar URLs generadas en consola
+        System.out.println("\n=== DEBUG FIREBASE IMAGES ===");
+        System.out.println("Total productos: " + productos.size());
+        for (Producto p : productos) {
+            System.out.println("ID: " + p.getId() + 
+                             " | Nombre: " + p.getNombre() + 
+                             " | imagenUrl: '" + p.getImagenUrl() + "'" +
+                             " | Ruta Firebase: " + p.getRutaImagenCompleta());
+        }
+        System.out.println("=== FIN DEBUG ===\n");
 
         model.addAttribute("productos", productos);
         model.addAttribute("categorias", categoriaService.findAll());
@@ -46,23 +55,26 @@ public class CatalogoController {
 
     @GetMapping("/producto/{id}")
     public String verProducto(@PathVariable Long id, Model model) {
-
         Producto producto = productoService.findById(id);
         if (producto == null) return "redirect:/catalogo";
+        
+        // ✅ DEBUG para producto individual
+        System.out.println("\n=== DEBUG PRODUCTO INDIVIDUAL ===");
+        System.out.println(producto.getInfoRutaImagen());
+        System.out.println("=== FIN DEBUG ===\n");
 
         model.addAttribute("producto", producto);
-
         return "producto-detalle";
     }
 
     private List<Producto> aplicarFiltrosYOrdenamiento(String categoria, String rangoPrecio, String orden) {
-
         List<Producto> productos = productoService.findAll();
 
         // FILTRAR CATEGORÍA
         if (categoria != null && !categoria.isEmpty()) {
             productos = productos.stream()
-                    .filter(p -> p.getCategoria().getNombre().equalsIgnoreCase(categoria))
+                    .filter(p -> p.getCategoria() != null && 
+                                 p.getCategoria().getNombre().equalsIgnoreCase(categoria))
                     .collect(Collectors.toList());
         }
 
@@ -76,7 +88,7 @@ public class CatalogoController {
             };
 
             productos = productos.stream()
-                    .filter(p -> p.getPrecio() >= r[0] && p.getPrecio() <= r[1])
+                    .filter(p -> p.getPrecio() != null && p.getPrecio() >= r[0] && p.getPrecio() <= r[1])
                     .collect(Collectors.toList());
         }
 
@@ -84,13 +96,22 @@ public class CatalogoController {
         if (orden != null && !orden.isEmpty()) {
             productos = switch (orden) {
                 case "precio-asc" ->
-                        productos.stream().sorted(Comparator.comparing(Producto::getPrecio)).toList();
+                    productos.stream()
+                            .sorted(Comparator.comparing(Producto::getPrecio, 
+                                    Comparator.nullsLast(Comparator.naturalOrder())))
+                            .toList();
 
                 case "precio-desc" ->
-                        productos.stream().sorted(Comparator.comparing(Producto::getPrecio).reversed()).toList();
+                    productos.stream()
+                            .sorted(Comparator.comparing(Producto::getPrecio, 
+                                    Comparator.nullsLast(Comparator.naturalOrder())).reversed())
+                            .toList();
 
                 case "nombre-asc" ->
-                        productos.stream().sorted(Comparator.comparing(Producto::getNombre)).toList();
+                    productos.stream()
+                            .sorted(Comparator.comparing(Producto::getNombre, 
+                                    Comparator.nullsLast(Comparator.naturalOrder())))
+                            .toList();
 
                 default -> productos;
             };

@@ -1,8 +1,4 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
-package com.stepup.shoes.service;
+package com.stepup.shoes.service;  // ¡IMPORTANTE!
 
 import com.stepup.shoes.model.Producto;
 import com.stepup.shoes.repository.ProductoRepository;
@@ -12,7 +8,6 @@ import java.util.List;
 
 @Service
 public class ProductoServiceImpl implements ProductoService {
-
     @Autowired
     private ProductoRepository productoRepository;
 

@@ -26,7 +26,7 @@
                         <option value="Deportivas">Deportivas</option>
                         <option value="Casual">Casual</option>
                         <option value="Formal">Formal</option>
-                        <option value="Crocs">Crocs</option> <!-- ✅ Agregada -->
+                        <option value="Crocs">Crocs</option>
                     </select>
                 </div>
 
@@ -64,16 +64,15 @@
 
             <div class="card h-100 producto-card">
 
-                <!-- ✅ CAMBIO CRÍTICO: Usar rutaImagenCompleta -->
+                <!-- ✅ SOLUCIÓN: Manejo de errores mejorado -->
                 <img th:src="${producto.rutaImagenCompleta}"
                      th:alt="${producto.nombre}"
                      style="height:220px;object-fit:cover;"
-                     onerror="this.src='/images/default.jpg'">
+                     onerror="manejarErrorImagen(this)">
 
                 <div class="card-body">
 
                     <h5 th:text="${producto.nombre}"></h5>
-                    <!-- ✅ Formato de precio mejorado -->
                     <p class="text-success fw-bold" 
                        th:text="'$' + ${#numbers.formatDecimal(producto.precio, 1, 2)}">
                     </p>
@@ -100,6 +99,53 @@
 <div th:replace="~{fragments/footer :: footer}"></div>
 
 <script src="/js/carrito.js"></script>
+
+<!-- ✅ SCRIPT CRÍTICO PARA DETENER BUCLE INFINITO -->
+<script>
+    // Variable para rastrear intentos y evitar bucles
+    const maxIntentosImagen = 1;
+    const intentosImagenes = new Map();
+    
+    function manejarErrorImagen(imgElement) {
+        const originalSrc = imgElement.src;
+        
+        // Contar intentos para esta imagen
+        const intentos = intentosImagenes.get(originalSrc) || 0;
+        
+        if (intentos >= maxIntentosImagen) {
+            // Detener bucle - desactivar onerror
+            imgElement.onerror = null;
+            
+            // Usar placeholder EXTERNO (no local para evitar 404)
+            imgElement.src = 'https://via.placeholder.com/300x200?text=Imagen+No+Disponible';
+            imgElement.alt = 'Imagen no disponible';
+            
+            console.log('Imagen reemplazada (bucle detenido):', originalSrc);
+            return;
+        }
+        
+        // Incrementar contador
+        intentosImagenes.set(originalSrc, intentos + 1);
+        
+        // Primero intentar placeholder local
+        imgElement.src = '/images/placeholder.png';
+        
+        console.log('Error cargando imagen. Intento:', intentos + 1, 'URL:', originalSrc);
+    }
+    
+    // También prevenir bucles en imágenes que no cargan (timeout)
+    document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(function() {
+            document.querySelectorAll('img').forEach(function(img) {
+                if (!img.complete || img.naturalWidth === 0) {
+                    console.log('Timeout para imagen:', img.src);
+                    img.onerror = null; // Prevenir bucle
+                    img.src = 'https://via.placeholder.com/300x200?text=Carga+Lenta';
+                }
+            });
+        }, 5000); // 5 segundos timeout
+    });
+</script>
 
 </body>
 </html>
