@@ -1,17 +1,23 @@
 package com.stepup.shoes.controller;
 
-import com.stepup.shoes.model.Producto;
-import com.stepup.shoes.service.ProductoService;
-import jakarta.servlet.http.HttpSession;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.stepup.shoes.model.Producto;
+import com.stepup.shoes.service.ProductoService;
+
+import jakarta.servlet.http.HttpSession;
 
 @Controller
 @RequestMapping("/carrito")
@@ -228,6 +234,7 @@ public class CarritoController {
     // AUXILIARES
     // ===================================
     private List<Map<String, Object>> obtenerCarrito(HttpSession session) {
+        @SuppressWarnings("unchecked")
         List<Map<String, Object>> carrito = (List<Map<String, Object>>) session.getAttribute("carrito");
         return carrito != null ? carrito : new ArrayList<>();
     }
